@@ -12,6 +12,7 @@
 .pub/
 **/doc/api/
 **/ios/Flutter/.last_build_id
+android/build/
 
 # Build & Coverage
 build/
