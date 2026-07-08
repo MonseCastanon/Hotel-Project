@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Paleta de colores del proyecto Hotel App
 class AppColors {
@@ -27,12 +28,23 @@ class AppTheme {
 
   const AppTheme({this.isDarkMode = false});
 
+  /// TextTheme base con Poppins para modo claro (texto oscuro sobre fondo claro).
+  static final TextTheme _poppinsLight = GoogleFonts.poppinsTextTheme(
+    ThemeData(brightness: Brightness.light).textTheme,
+  );
+
+  /// TextTheme base con Poppins para modo oscuro (texto claro sobre fondo oscuro).
+  static final TextTheme _poppinsDark = GoogleFonts.poppinsTextTheme(
+    ThemeData(brightness: Brightness.dark).textTheme,
+  );
+
   ThemeData getTheme() => isDarkMode ? _darkTheme : _lightTheme;
 
   // ─────────────────────────────── Tema Claro ──────────────────────────────
   static final ThemeData _lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
+    textTheme: _poppinsLight,
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
       // Primario
@@ -99,6 +111,7 @@ class AppTheme {
   static final ThemeData _darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
+    textTheme: _poppinsDark,
     colorScheme: const ColorScheme(
       brightness: Brightness.dark,
       // Primario
