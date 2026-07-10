@@ -6,6 +6,7 @@ import 'package:hotel_app/presentation/providers/rooms/rooms_provider.dart';
 // ─────────────────────────── Infraestructura ────────────────────────────────
 
 final reservationsDataSourceProvider = Provider<ReservationsDataSource>((ref) {
+  if (kUseMock) return ReservationsLocalDataSource();
   return ReservationsDataSourceImpl(ref.watch(dioProvider));
 });
 

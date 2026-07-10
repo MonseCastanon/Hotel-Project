@@ -1,17 +1,21 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/infrastructure/infraestructure.dart';
+
+/// Cambia a `false` cuando el backend esté listo
+const bool kUseMock = true;
 
 // ─────────────────────────── Infraestructura ────────────────────────────────
 
 /// Provider del cliente Dio configurado para el API
 final dioProvider = Provider<Dio>((ref) {
+  // Lee la URL base desde el .env cargado por flutter_dotenv
+  final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000/api';
+
   return Dio(BaseOptions(
-    baseUrl: const String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: 'http://10.0.2.2:3000/api',
-    ),
+    baseUrl: baseUrl,
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 15),
     headers: {'Content-Type': 'application/json'},
@@ -20,6 +24,7 @@ final dioProvider = Provider<Dio>((ref) {
 
 /// Provider del datasource de habitaciones
 final roomsDataSourceProvider = Provider<RoomsDataSource>((ref) {
+  if (kUseMock) return RoomsLocalDataSource();
   return RoomsDataSourceImpl(ref.watch(dioProvider));
 });
 
