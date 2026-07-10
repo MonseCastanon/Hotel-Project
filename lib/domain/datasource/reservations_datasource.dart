@@ -1,4 +1,4 @@
-import '../entities/entities.dart';
+import 'package:hotel_app/domain/entities/entities.dart';
 
 /// Parámetros para crear una nueva reservación
 class CreateReservationParams {
