@@ -32,7 +32,7 @@ class RoomDetailState {
 // ─────────────────────────── Notifier (Riverpod 3 family) ────────────────────
 
 class RoomDetailNotifier extends Notifier<RoomDetailState> {
-  late final String _roomId;
+  String? _roomId;
 
   @override
   RoomDetailState build() => const RoomDetailState();
@@ -55,7 +55,10 @@ class RoomDetailNotifier extends Notifier<RoomDetailState> {
   }
 
   /// Reintenta la carga del último roomId
-  Future<void> retry() => loadRoom(_roomId);
+  Future<void> retry() async {
+    if (_roomId == null) return;
+    await loadRoom(_roomId!);
+  }
 }
 
 // ─────────────────────────── Provider ────────────────────────────────────────

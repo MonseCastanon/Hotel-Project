@@ -17,27 +17,31 @@ class RoomDetailScreen extends ConsumerStatefulWidget {
 
 class _RoomDetailScreenState extends ConsumerState<RoomDetailScreen> {
   @override
-  void initState() {
-    super.initState();
-    // Carga el detalle en el primer frame para evitar setState durante build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(roomDetailProvider.notifier).loadRoom(widget.roomId);
-    });
-  }
+void initState() {
+  super.initState();
 
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    ref.read(roomDetailProvider.notifier).loadRoom(widget.roomId);
+  });
+}
+  
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(roomDetailProvider);
 
     return switch (true) {
       _ when state.isLoading => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+        body: Center(child: CircularProgressIndicator()),
+      ),
       _ when state.errorMessage != null => _ErrorBody(
-          message: state.errorMessage!,
-          onRetry: () => ref.read(roomDetailProvider.notifier).retry(),
-        ),
-      _ when state.room != null => _RoomDetailBody(room: state.room!),
+        message: state.errorMessage!,
+        onRetry: () => ref
+          .read(roomDetailProvider.notifier)
+          .retry(),
+      ),
+      _ when state.room != null => Scaffold(
+        body: _RoomDetailBody(room: state.room!),
+      ),
       _ => const Scaffold(body: SizedBox.shrink()),
     };
   }
@@ -63,18 +67,30 @@ class _RoomDetailBody extends StatelessWidget {
             title: Text(
               'Habitación ${room.roomNumber}',
               style: const TextStyle(
-                  color: Colors.white,
-                  shadows: [Shadow(blurRadius: 4, color: Colors.black45)]),
+                color: Colors.white,
+                shadows: [Shadow(blurRadius: 4, color: Colors.black45)],
+              ),
             ),
             background: room.images.isNotEmpty
-                ? Image.network(room.images.first, fit: BoxFit.cover,
+                ? Image.network(
+                    room.images.first,
+                    fit: BoxFit.cover,
                     errorBuilder: (_, child, progress) => Container(
                       color: AppColors.secondary.withValues(alpha: 0.4),
-                      child: const Icon(Icons.hotel, size: 80, color: AppColors.secondary),
-                    ))
+                      child: const Icon(
+                        Icons.hotel,
+                        size: 80,
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                  )
                 : Container(
                     color: AppColors.secondary.withValues(alpha: 0.4),
-                    child: const Icon(Icons.hotel, size: 80, color: AppColors.secondary),
+                    child: const Icon(
+                      Icons.hotel,
+                      size: 80,
+                      color: AppColors.secondary,
+                    ),
                   ),
           ),
         ),
@@ -83,12 +99,12 @@ class _RoomDetailBody extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-
               // ── Estado + tipo ──
-              Row(
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
                 children: [
                   RoomStatusBadge(status: room.status),
-                  const SizedBox(width: 10),
                   Chip(
                     label: Text(room.roomType.label),
                     backgroundColor: AppColors.secondary.withValues(alpha: 0.2),
@@ -119,26 +135,39 @@ class _RoomDetailBody extends StatelessWidget {
               const SizedBox(height: 20),
 
               // ── Descripción ──
-              Text('Descripción', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Descripción',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               Text(room.description, style: theme.textTheme.bodyMedium),
               const SizedBox(height: 20),
 
               // ── Amenities ──
               if (room.amenities.isNotEmpty) ...[
-                Text('Servicios incluidos',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Servicios incluidos',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 6,
                   children: room.amenities
-                      .map((a) => Chip(
-                            label: Text(a, style: const TextStyle(fontSize: 12)),
-                            avatar: const Icon(Icons.check, size: 14),
-                            backgroundColor: AppColors.secondary.withValues(alpha: 0.15),
-                            side: BorderSide.none,
-                          ))
+                      .map(
+                        (a) => Chip(
+                          label: Text(a, style: const TextStyle(fontSize: 12)),
+                          avatar: const Icon(Icons.check, size: 14),
+                          backgroundColor: AppColors.secondary.withValues(
+                            alpha: 0.15,
+                          ),
+                          side: BorderSide.none,
+                        ),
+                      )
                       .toList(),
                 ),
                 const SizedBox(height: 80),
@@ -157,7 +186,12 @@ class _InfoTile extends StatelessWidget {
   final String value;
   final Color color;
 
-  const _InfoTile({required this.icon, required this.label, required this.value, required this.color});
+  const _InfoTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -176,14 +210,19 @@ class _InfoTile extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelSmall
-                        ?.copyWith(color: color)),
-                Text(value,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold, color: color)),
+                Text(
+                  label,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: color),
+                ),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
               ],
             ),
           ],
@@ -207,7 +246,11 @@ class _ErrorBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: AppColors.secondary),
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppColors.secondary,
+            ),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),

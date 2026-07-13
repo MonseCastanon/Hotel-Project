@@ -19,7 +19,7 @@ abstract class AppRoutes {
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.rooms,
+    initialLocation: '/login',
     debugLogDiagnostics: true,
     routes: _routes,
     errorBuilder: (context, state) => RouterErrorScreen(
@@ -31,6 +31,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 // ─────────────────────────── Rutas ───────────────────────────────────────────
 
 final List<RouteBase> _routes = [
+  // ── Autenticación ───────────────────────────────────────────────────────
+  GoRoute(
+    path: '/login',
+    name: 'login',
+    builder: (context, state) => const LoginScreen(),
+  ),
+
   // ── Habitaciones ──────────────────────────────────────────────────────────
   GoRoute(
     path: AppRoutes.rooms,
