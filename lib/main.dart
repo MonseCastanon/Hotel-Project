@@ -24,11 +24,11 @@ class HotelApp extends ConsumerWidget {
     final router = ref.watch(goRouterProvider);
 
     return MaterialApp.router(
-      title: 'Hotel App',
+  title: 'Hotel App',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme(isDarkMode: false).getTheme(),
-      darkTheme: AppTheme(isDarkMode: true).getTheme(),
-      themeMode: ThemeMode.light,
+      theme: const AppTheme().getTheme(),
+      darkTheme: const AppTheme(isDarkMode: true).getTheme(),
+      themeMode: ThemeMode.system,
       routerConfig: router,
     );
   }
