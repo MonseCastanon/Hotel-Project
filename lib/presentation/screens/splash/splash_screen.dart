@@ -33,9 +33,18 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Después de 2 segundos navega al Dashboard
+    // Después de 2 segundos navega según el dispositivo
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) context.go('/dashboard');
+      if (!mounted) return;
+      
+      // Si el lado más corto de la pantalla es menor a 300, asumimos que es un reloj (Wear OS)
+      // Los celulares normales suelen tener > 360 de ancho.
+      final shortestSide = MediaQuery.of(context).size.shortestSide;
+      if (shortestSide < 300) {
+        context.go('/wear');
+      } else {
+        context.go('/dashboard');
+      }
     });
   }
 
@@ -107,32 +116,6 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                 ),
-              ),
-            ),
-
-            // ── Barra de progreso inferior ─────────────────────────────
-            Padding(
-              padding: const EdgeInsets.only(bottom: 48, left: 60, right: 60),
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      backgroundColor: Colors.white.withValues(alpha: 0.2),
-                      valueColor:
-                          const AlwaysStoppedAnimation<Color>(Colors.white),
-                      minHeight: 3,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Iniciando...',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
               ),
             ),
           ],

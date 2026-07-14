@@ -72,18 +72,30 @@ class _RoomDetailBody extends StatelessWidget {
               ),
             ),
             background: room.images.isNotEmpty
-                ? Image.network(
-                    room.images.first,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, child, progress) => Container(
-                      color: AppColors.secondary.withValues(alpha: 0.4),
-                      child: const Icon(
-                        Icons.hotel,
-                        size: 80,
-                        color: AppColors.secondary,
-                      ),
-                    ),
+                ? PageView.builder(
+                    itemCount: room.images.length,
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        room.images[index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, child, progress) => Container(
+                          color: AppColors.secondary.withValues(alpha: 0.4),
+                          child: const Icon(
+                            Icons.hotel,
+                            size: 80,
+                            color: AppColors.secondary,
+                          ),
+                        ),
+                      );
+                    },
                   )
+                /* 
+                  💡 TIP: Para cargar múltiples fotos y usar este carrusel,
+                  asegúrate de que `room.images` contenga múltiples URLs
+                  (ej. ['url1.jpg', 'url2.jpg', 'url3.jpg']). 
+                  Si deseas ver "puntitos" indicadores de página, se recomienda
+                  agregar la librería `carousel_slider` o usar un `SmoothPageIndicator`.
+                */
                 : Container(
                     color: AppColors.secondary.withValues(alpha: 0.4),
                     child: const Icon(
@@ -100,11 +112,11 @@ class _RoomDetailBody extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               // ── Estado + tipo ──
-              Wrap(
-                spacing: 10,
-                runSpacing: 8,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   RoomStatusBadge(status: room.status),
+                  const SizedBox(width: 10),
                   Chip(
                     label: Text(room.roomType.label),
                     backgroundColor: AppColors.secondary.withValues(alpha: 0.2),
@@ -128,7 +140,7 @@ class _RoomDetailBody extends StatelessWidget {
                     icon: Icons.people_outline,
                     label: 'Capacidad',
                     value: '${room.capacity} pers.',
-                    color: cs.secondary,
+                    color: const Color(0xFF2196F3), // Azul visible en claro/oscuro
                   ),
                 ],
               ),

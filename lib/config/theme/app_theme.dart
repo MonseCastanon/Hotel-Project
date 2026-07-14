@@ -19,6 +19,9 @@ class AppColors {
 
   /// Blanco humo — superficies / tarjetas en modo claro
   static const Color surface = Color(0xFFF2F2F2);
+
+  /// Verde — color de éxito
+  static const Color success = Color(0xFF4CAF50);
 }
 
 /// Clase que gestiona el tema de la aplicación.

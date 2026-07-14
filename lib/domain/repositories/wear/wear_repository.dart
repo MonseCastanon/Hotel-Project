@@ -45,4 +45,7 @@ abstract class WearRepository {
 
   /// Stream de actualizaciones en tiempo real
   Stream<Map<String, dynamic>> getRealtimeUpdates();
+
+  /// Crea una nueva tarea (útil para el Dashboard móvil)
+  Future<void> createTask(WearTask task);
 }

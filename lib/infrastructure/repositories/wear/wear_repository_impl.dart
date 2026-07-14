@@ -89,4 +89,10 @@ class WearRepositoryImpl implements WearRepository {
   Stream<Map<String, dynamic>> getRealtimeUpdates() {
     return communicationService.receiveUpdates();
   }
+
+  @override
+  Future<void> createTask(WearTask task) {
+    // TODO: implement createTask
+    throw UnimplementedError();
+  }
 }
