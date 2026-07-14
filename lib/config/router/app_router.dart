@@ -50,6 +50,23 @@ final List<RouteBase> _routes = [
     builder: (context, state) => const LoginScreen(),
   ),
 
+  // ── Wearable ────────────────────────────────────────────────────────────
+  GoRoute(
+    path: '/wear',
+    name: 'wearDashboard',
+    builder: (context, state) => const WearDashboardScreen(),
+    routes: [
+      GoRoute(
+        path: 'task/:id',
+        name: 'wearTaskDetail',
+        builder: (context, state) {
+          final taskId = state.pathParameters['id']!;
+          return WearTaskDetailScreen(taskId: taskId);
+        },
+      ),
+    ],
+  ),
+
   // ── Shell principal con Bottom Navigation ────────────────────────────────
   StatefulShellRoute.indexedStack(
     builder: (context, state, navigationShell) =>

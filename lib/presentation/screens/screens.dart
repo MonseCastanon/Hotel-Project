@@ -6,3 +6,5 @@ export 'rooms/room_details_screen.dart';
 export 'rooms/check_in_screen.dart';
 export 'rooms/check_out_screen.dart';
 export 'reservations/reservations_screen.dart';
+export 'wear/wear_dashboard_screen.dart';
+export 'wear/wear_task_detail_screen.dart';

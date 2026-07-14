@@ -145,18 +145,18 @@ class ReservationsScreen extends ConsumerWidget {
       BuildContext context, Reservation r, ReservationsNotifier notifier) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Cancelar reservación'),
         content: Text(
             '¿Estás seguro de cancelar la reservación de ${r.guestName}?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('No')),
           ElevatedButton(
             style:
                 ElevatedButton.styleFrom(backgroundColor: Colors.red[700]),
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Sí, cancelar',
                 style: TextStyle(color: Colors.white)),
           ),

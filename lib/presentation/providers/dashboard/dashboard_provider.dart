@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_app/domain/domain.dart';
+import 'package:hotel_app/domain/entities/wear/wear_task.dart';
 import 'package:hotel_app/presentation/providers/rooms/rooms_provider.dart';
 import 'package:hotel_app/presentation/providers/rooms/check_in_out_provider.dart';
+import 'package:hotel_app/presentation/providers/wear/wear_provider.dart';
 
 // ───────────────────────────── Modelos ────────────────────────────────────────
 
@@ -115,21 +117,23 @@ class DashboardNotifier extends Notifier<DashboardState> {
         available: rooms.where((r) => r.status == RoomStatus.available).length,
         occupied: rooms.where((r) => r.status == RoomStatus.occupied).length,
         reserved: rooms.where((r) => r.status == RoomStatus.reserved).length,
-        maintenance:
-            rooms.where((r) => r.status == RoomStatus.maintenance).length,
+        maintenance: rooms
+            .where((r) => r.status == RoomStatus.maintenance)
+            .length,
         total: rooms.length,
       );
 
       // Reservaciones próximas (activas en los próximos 2 días)
       final now = DateTime.now();
       final upcoming = reservations.where((r) {
-        final isActive = r.status == ReservationStatus.confirmed ||
+        final isActive =
+            r.status == ReservationStatus.confirmed ||
             r.status == ReservationStatus.checkedIn;
-        final isNear = r.checkIn.isBefore(now.add(const Duration(days: 2))) ||
+        final isNear =
+            r.checkIn.isBefore(now.add(const Duration(days: 2))) ||
             r.checkOut.isBefore(now.add(const Duration(days: 2)));
         return isActive && isNear;
-      }).toList()
-        ..sort((a, b) => a.checkIn.compareTo(b.checkIn));
+      }).toList()..sort((a, b) => a.checkIn.compareTo(b.checkIn));
 
       // Genera alertas a partir de reservaciones próximas
       final alerts = <DashboardAlert>[];
@@ -138,26 +142,30 @@ class DashboardNotifier extends Notifier<DashboardState> {
         if (res.status == ReservationStatus.confirmed) {
           final diff = res.checkIn.difference(now);
           if (diff.inDays <= 1 && diff.inDays >= 0) {
-            alerts.add(DashboardAlert(
-              id: 'ci-${res.id}',
-              type: 'checkIn',
-              guestName: res.guestName,
-              roomNumber: res.roomId,
-              scheduledAt: res.checkIn,
-            ));
+            alerts.add(
+              DashboardAlert(
+                id: 'ci-${res.id}',
+                type: 'checkIn',
+                guestName: res.guestName,
+                roomNumber: res.roomId,
+                scheduledAt: res.checkIn,
+              ),
+            );
           }
         }
         // Alerta de check-out próximo (huéspedes adentro)
         if (res.status == ReservationStatus.checkedIn) {
           final diff = res.checkOut.difference(now);
           if (diff.inDays <= 1 && diff.inDays >= 0) {
-            alerts.add(DashboardAlert(
-              id: 'co-${res.id}',
-              type: 'checkOut',
-              guestName: res.guestName,
-              roomNumber: res.roomId,
-              scheduledAt: res.checkOut,
-            ));
+            alerts.add(
+              DashboardAlert(
+                id: 'co-${res.id}',
+                type: 'checkOut',
+                guestName: res.guestName,
+                roomNumber: res.roomId,
+                scheduledAt: res.checkOut,
+              ),
+            );
           }
         }
       }
@@ -176,8 +184,9 @@ class DashboardNotifier extends Notifier<DashboardState> {
     }
   }
 
-  /// Marca una alerta como enviada al Wear (UI feedback)
-  void markAlertSentToWear(String alertId) {
+  /// Marca una alerta como enviada al Wear (UI feedback y Firebase)
+  Future<void> markAlertSentToWear(String alertId) async {
+    // 1. Update UI optimistically
     final updated = state.alerts.map((a) {
       return a.id == alertId
           ? DashboardAlert(
@@ -191,9 +200,35 @@ class DashboardNotifier extends Notifier<DashboardState> {
           : a;
     }).toList();
     state = state.copyWith(alerts: updated);
+
+    // 2. Send to Firebase
+    try {
+      final alert = state.alerts.firstWhere((a) => a.id == alertId);
+      final repo = ref.read(wearRepositoryProvider);
+
+      final task = WearTask(
+        id: '', // Firestore genera el ID
+        roomId: alert.roomNumber,
+        roomNumber: int.tryParse(alert.roomNumber) ?? 0,
+        taskType: alert.type == 'checkIn'
+            ? WearTaskType.inspection
+            : WearTaskType.cleaning,
+        status: WearTaskStatus.pending,
+        description: alert.type == 'checkIn'
+            ? 'Inspección de cuarto para Check-In: ${alert.guestName}'
+            : 'Limpieza de Check-Out: ${alert.guestName}',
+        createdAt: DateTime.now(),
+        priority: 4,
+      );
+
+      await repo.createTask(task);
+    } catch (e) {
+      print('Error enviando a Wear: $e');
+    }
   }
 }
 
 /// Provider del Dashboard
-final dashboardProvider =
-    NotifierProvider<DashboardNotifier, DashboardState>(DashboardNotifier.new);
+final dashboardProvider = NotifierProvider<DashboardNotifier, DashboardState>(
+  DashboardNotifier.new,
+);
