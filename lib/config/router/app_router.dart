@@ -3,13 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
 import 'package:hotel_app/presentation/screens/screens.dart';
+import 'package:hotel_app/presentation/widgets/shared/main_scaffold.dart';
 
 // ─────────────────────────── Nombres de rutas ────────────────────────────────
 
 abstract class AppRoutes {
+  // Inicio
+  static const splash = '/splash';
+  static const login = '/login';
+  static const dashboard = '/dashboard';
+
   // Habitaciones
   static const rooms = '/rooms';
-  static const roomDetail = '/rooms/:roomId';
 
   // Reservaciones
   static const reservations = '/reservations';
@@ -19,7 +24,7 @@ abstract class AppRoutes {
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: AppRoutes.login,
     debugLogDiagnostics: true,
     routes: _routes,
     errorBuilder: (context, state) => RouterErrorScreen(
@@ -31,68 +36,101 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 // ─────────────────────────── Rutas ───────────────────────────────────────────
 
 final List<RouteBase> _routes = [
+  // ── Splash ──────────────────────────────────────────────────────────────
+  GoRoute(
+    path: AppRoutes.splash,
+    name: 'splash',
+    builder: (context, state) => const SplashScreen(),
+  ),
+
   // ── Autenticación ───────────────────────────────────────────────────────
   GoRoute(
-    path: '/login',
+    path: AppRoutes.login,
     name: 'login',
     builder: (context, state) => const LoginScreen(),
   ),
 
-  // ── Habitaciones ──────────────────────────────────────────────────────────
-  GoRoute(
-    path: AppRoutes.rooms,
-    name: 'rooms',
-    builder: (context, state) => const RoomsScreen(),
-    routes: [
-      // Detalle de habitación
-      GoRoute(
-        path: ':roomId',
-        name: 'roomDetail',
-        builder: (context, state) {
-          final roomId = state.pathParameters['roomId']!;
-          return RoomDetailScreen(roomId: roomId);
-        },
+  // ── Shell principal con Bottom Navigation ────────────────────────────────
+  StatefulShellRoute.indexedStack(
+    builder: (context, state, navigationShell) =>
+        MainScaffold(navigationShell: navigationShell),
+    branches: [
+      // Branch 0 — Dashboard
+      StatefulShellBranch(
         routes: [
-          // Check-in — datos vienen como queryParameters
           GoRoute(
-            path: 'check-in',
-            name: 'checkIn',
-            builder: (context, state) {
-              final roomId = state.pathParameters['roomId']!;
-              final q = state.uri.queryParameters;
-              return CheckInScreen(
-                reservationId: q['reservationId'] ?? '',
-                guestName: q['guestName'] ?? '',
-                roomNumber: q['roomNumber'] ?? roomId,
-              );
-            },
+            path: AppRoutes.dashboard,
+            name: 'dashboard',
+            builder: (context, state) => const DashboardScreen(),
           ),
-          // Check-out — datos vienen como extra Map
+        ],
+      ),
+
+      // Branch 1 — Habitaciones
+      StatefulShellBranch(
+        routes: [
           GoRoute(
-            path: 'check-out',
-            name: 'checkOut',
-            builder: (context, state) {
-              final roomId = state.pathParameters['roomId']!;
-              final extra = state.extra as Map<String, dynamic>? ?? {};
-              return CheckOutScreen(
-                reservationId: extra['reservationId'] as String? ?? '',
-                guestName: extra['guestName'] as String? ?? '',
-                roomNumber: extra['roomNumber'] as String? ?? roomId,
-                nights: extra['nights'] as int? ?? 1,
-                total: (extra['total'] as num?)?.toDouble() ?? 0.0,
-              );
-            },
+            path: AppRoutes.rooms,
+            name: 'rooms',
+            builder: (context, state) => const RoomsScreen(),
+            routes: [
+              // Detalle de habitación
+              GoRoute(
+                path: ':roomId',
+                name: 'roomDetail',
+                builder: (context, state) {
+                  final roomId = state.pathParameters['roomId']!;
+                  return RoomDetailScreen(roomId: roomId);
+                },
+                routes: [
+                  // Check-in — datos vienen como queryParameters
+                  GoRoute(
+                    path: 'check-in',
+                    name: 'checkIn',
+                    builder: (context, state) {
+                      final roomId = state.pathParameters['roomId']!;
+                      final q = state.uri.queryParameters;
+                      return CheckInScreen(
+                        reservationId: q['reservationId'] ?? '',
+                        guestName: q['guestName'] ?? '',
+                        roomNumber: q['roomNumber'] ?? roomId,
+                      );
+                    },
+                  ),
+                  // Check-out — datos vienen como extra Map
+                  GoRoute(
+                    path: 'check-out',
+                    name: 'checkOut',
+                    builder: (context, state) {
+                      final roomId = state.pathParameters['roomId']!;
+                      final extra = state.extra as Map<String, dynamic>? ?? {};
+                      return CheckOutScreen(
+                        reservationId: extra['reservationId'] as String? ?? '',
+                        guestName: extra['guestName'] as String? ?? '',
+                        roomNumber: extra['roomNumber'] as String? ?? roomId,
+                        nights: extra['nights'] as int? ?? 1,
+                        total: (extra['total'] as num?)?.toDouble() ?? 0.0,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // Branch 2 — Reservaciones
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: AppRoutes.reservations,
+            name: 'reservations',
+            builder: (context, state) => const ReservationsScreen(),
           ),
         ],
       ),
     ],
-  ),
-
-  // ── Reservaciones ─────────────────────────────────────────────────────────
-  GoRoute(
-    path: AppRoutes.reservations,
-    name: 'reservations',
-    builder: (context, state) => const ReservationsScreen(),
   ),
 ];
 
@@ -130,7 +168,7 @@ class RouterErrorScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                onPressed: () => context.go(AppRoutes.rooms),
+                onPressed: () => context.go(AppRoutes.dashboard),
                 icon: const Icon(Icons.home),
                 label: const Text('Ir al inicio'),
               ),
