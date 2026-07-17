@@ -1,9 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_app/domain/domain.dart';
-import 'package:hotel_app/domain/entities/wear/wear_task.dart';
 import 'package:hotel_app/presentation/providers/rooms/rooms_provider.dart';
 import 'package:hotel_app/presentation/providers/rooms/check_in_out_provider.dart';
-import 'package:hotel_app/presentation/providers/wear/wear_provider.dart';
 
 // ───────────────────────────── Modelos ────────────────────────────────────────
 
@@ -31,7 +29,6 @@ class DashboardAlert {
   final String guestName;
   final String roomNumber;
   final DateTime scheduledAt;
-  final bool sentToWear;
 
   const DashboardAlert({
     required this.id,
@@ -39,7 +36,6 @@ class DashboardAlert {
     required this.guestName,
     required this.roomNumber,
     required this.scheduledAt,
-    this.sentToWear = false,
   });
 
   String get label => type == 'checkIn' ? 'Check-in' : 'Check-out';
@@ -181,49 +177,6 @@ class DashboardNotifier extends Notifier<DashboardState> {
         isLoading: false,
         errorMessage: e.toString().replaceFirst('Exception: ', ''),
       );
-    }
-  }
-
-  /// Marca una alerta como enviada al Wear (UI feedback y Firebase)
-  Future<void> markAlertSentToWear(String alertId) async {
-    // 1. Update UI optimistically
-    final updated = state.alerts.map((a) {
-      return a.id == alertId
-          ? DashboardAlert(
-              id: a.id,
-              type: a.type,
-              guestName: a.guestName,
-              roomNumber: a.roomNumber,
-              scheduledAt: a.scheduledAt,
-              sentToWear: true,
-            )
-          : a;
-    }).toList();
-    state = state.copyWith(alerts: updated);
-
-    // 2. Send to Firebase
-    try {
-      final alert = state.alerts.firstWhere((a) => a.id == alertId);
-      final repo = ref.read(wearRepositoryProvider);
-
-      final task = WearTask(
-        id: '', // Firestore genera el ID
-        roomId: alert.roomNumber,
-        roomNumber: int.tryParse(alert.roomNumber) ?? 0,
-        taskType: alert.type == 'checkIn'
-            ? WearTaskType.inspection
-            : WearTaskType.cleaning,
-        status: WearTaskStatus.pending,
-        description: alert.type == 'checkIn'
-            ? 'Inspección de cuarto para Check-In: ${alert.guestName}'
-            : 'Limpieza de Check-Out: ${alert.guestName}',
-        createdAt: DateTime.now(),
-        priority: 4,
-      );
-
-      await repo.createTask(task);
-    } catch (e) {
-      print('Error enviando a Wear: $e');
     }
   }
 }
