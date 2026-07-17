@@ -1,1 +1,0 @@
-export 'wear_repository.dart';

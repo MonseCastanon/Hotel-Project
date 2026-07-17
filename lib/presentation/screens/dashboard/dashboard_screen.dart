@@ -110,12 +110,7 @@ class DashboardScreen extends ConsumerWidget {
                       )
                     else
                       ...state.alerts.map(
-                        (alert) => _AlertCard(
-                          alert: alert,
-                          onSendToWear: () => ref
-                              .read(dashboardProvider.notifier)
-                              .markAlertSentToWear(alert.id),
-                        ),
+                        (alert) => _AlertCard(alert: alert),
                       ),
                     const SizedBox(height: 24),
 
@@ -320,9 +315,8 @@ class _StatCard extends StatelessWidget {
 
 class _AlertCard extends StatelessWidget {
   final DashboardAlert alert;
-  final VoidCallback onSendToWear;
 
-  const _AlertCard({required this.alert, required this.onSendToWear});
+  const _AlertCard({required this.alert});
 
   @override
   Widget build(BuildContext context) {
@@ -406,17 +400,6 @@ class _AlertCard extends StatelessWidget {
             ),
           ),
 
-          // Botón Wear
-          IconButton(
-            tooltip: alert.sentToWear ? 'Enviado al Wear' : 'Enviar al Wear',
-            onPressed: alert.sentToWear ? null : onSendToWear,
-            icon: Icon(
-              Icons.watch_rounded,
-              color: alert.sentToWear
-                  ? Colors.grey
-                  : AppColors.primary,
-            ),
-          ),
         ],
       ),
     );

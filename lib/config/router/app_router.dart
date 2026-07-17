@@ -24,7 +24,7 @@ abstract class AppRoutes {
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.login,
+    initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
     routes: _routes,
     errorBuilder: (context, state) => RouterErrorScreen(
@@ -48,23 +48,6 @@ final List<RouteBase> _routes = [
     path: AppRoutes.login,
     name: 'login',
     builder: (context, state) => const LoginScreen(),
-  ),
-
-  // ── Wearable ────────────────────────────────────────────────────────────
-  GoRoute(
-    path: '/wear',
-    name: 'wearDashboard',
-    builder: (context, state) => const WearDashboardScreen(),
-    routes: [
-      GoRoute(
-        path: 'task/:id',
-        name: 'wearTaskDetail',
-        builder: (context, state) {
-          final taskId = state.pathParameters['id']!;
-          return WearTaskDetailScreen(taskId: taskId);
-        },
-      ),
-    ],
   ),
 
   // ── Shell principal con Bottom Navigation ────────────────────────────────

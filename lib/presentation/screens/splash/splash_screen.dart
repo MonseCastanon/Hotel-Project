@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
+import 'package:hotel_app/presentation/providers/auth/auth_provider.dart';
 
 /// Pantalla de inicio: se muestra 2 segundos mientras la app inicializa,
 /// luego navega al Dashboard.
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeAnim;
@@ -33,17 +35,13 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Después de 2 segundos navega según el dispositivo
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
-      
-      // Si el lado más corto de la pantalla es menor a 300, asumimos que es un reloj (Wear OS)
-      // Los celulares normales suelen tener > 360 de ancho.
-      final shortestSide = MediaQuery.of(context).size.shortestSide;
-      if (shortestSide < 300) {
-        context.go('/wear');
-      } else {
+      final authState = ref.read(authProvider);
+      if (authState.isAuthenticated) {
         context.go('/dashboard');
+      } else {
+        context.go('/login');
       }
     });
   }

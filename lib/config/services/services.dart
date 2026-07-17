@@ -1,1 +1,1 @@
-export 'wear_communication_service.dart';
+// No additional services — wear communication moved to hotel-wear-app
