@@ -118,7 +118,7 @@ class CheckOutScreen extends ConsumerWidget {
               child: ElevatedButton.icon(
                 onPressed: state.isLoading
                     ? null
-                    : () => notifier.performCheckOut(reservationId),
+                    : () => notifier.performCheckOut(reservationId, roomNumber, guestName),
                 icon: state.isLoading
                     ? const SizedBox(
                         width: 18,
