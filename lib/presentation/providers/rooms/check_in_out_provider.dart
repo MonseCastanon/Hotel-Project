@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/infrastructure/infraestructure.dart';
+import 'package:hotel_app/infrastructure/services/firebase_task_service.dart';
 import 'package:hotel_app/presentation/providers/rooms/rooms_provider.dart';
+import 'package:hotel_app/presentation/providers/dashboard/dashboard_provider.dart';
+import 'package:hotel_app/presentation/providers/tasks/tasks_provider.dart';
 
 // ─────────────────────────── Infraestructura ────────────────────────────────
 
@@ -53,18 +56,42 @@ class CheckInOutNotifier extends Notifier<CheckInOutState> {
   @override
   CheckInOutState build() => const CheckInOutState();
 
-  ReservationsRepository get _repository =>
+  ReservationsRepository get _reservationsRepo =>
       ref.read(reservationsRepositoryProvider);
 
-  /// Realiza el check-in de una reservación
-  Future<bool> performCheckIn(String reservationId) async {
+  RoomsRepository get _roomsRepo => ref.read(roomsRepositoryProvider);
+
+  FirebaseTaskService get _taskService => ref.read(firebaseTaskServiceProvider);
+
+  /// Invalida todos los providers afectados por un cambio de estado.
+  void _invalidateAll() {
+    ref.invalidate(roomsProvider);
+    ref.invalidate(dashboardProvider);
+    ref.invalidate(activeTasksProvider);
+  }
+
+  // ── Check-in ──────────────────────────────────────────────────────────────
+
+  /// Realiza el check-in de una reservación.
+  /// 
+  /// [reservationId] — ID de la reservación a actualizar.
+  /// [roomId]        — ID de la habitación (para actualizar su estado a "ocupada").
+  Future<bool> performCheckIn(String reservationId, String roomId) async {
     state = state.copyWith(isLoading: true, clearMessages: true);
     try {
-      final reservation = await _repository.checkIn(reservationId);
+      // 1. Actualiza el estado de la reservación
+      final reservation = await _reservationsRepo.checkIn(reservationId);
+
+      // 2. Actualiza el estado de la habitación a "Ocupada"
+      await _roomsRepo.updateRoomStatus(roomId, RoomStatus.occupied);
+
+      // 3. Refresca habitaciones, dashboard y tareas en toda la app
+      _invalidateAll();
+
       state = state.copyWith(
         isLoading: false,
         updatedReservation: reservation,
-        successMessage: 'Check-in realizado exitosamente.',
+        successMessage: 'Check-in realizado. Habitación marcada como ocupada.',
       );
       return true;
     } catch (e) {
@@ -76,15 +103,45 @@ class CheckInOutNotifier extends Notifier<CheckInOutState> {
     }
   }
 
-  /// Realiza el check-out de una reservación
-  Future<bool> performCheckOut(String reservationId) async {
+  // ── Check-out ─────────────────────────────────────────────────────────────
+
+  /// Realiza el check-out de una reservación y genera automáticamente
+  /// una tarea de limpieza en Firestore para el wearable.
+  /// 
+  /// [reservationId] — ID de la reservación a cerrar.
+  /// [roomId]        — ID de la habitación (para actualizar su estado a "disponible").
+  /// [guestName]     — Nombre del huésped (incluido en la descripción de la tarea).
+  Future<bool> performCheckOut(
+    String reservationId,
+    String roomId,
+    String guestName,
+  ) async {
     state = state.copyWith(isLoading: true, clearMessages: true);
     try {
-      final reservation = await _repository.checkOut(reservationId);
+      // 1. Actualiza el estado de la reservación
+      final reservation = await _reservationsRepo.checkOut(reservationId);
+
+      // 2. Obtiene los datos completos de la habitación (necesita roomNumber real)
+      final room = await _roomsRepo.getRoomById(roomId);
+
+      // 3. Actualiza el estado de la habitación a "Disponible"
+      await _roomsRepo.updateRoomStatus(roomId, RoomStatus.available);
+
+      // 4. Publica tarea de limpieza en Firestore → el wearable la recibe
+      await _taskService.createCleaningTask(
+        roomId: roomId,
+        roomNumber: room.roomNumber,
+        guestName: guestName,
+      );
+
+      // 5. Refresca habitaciones, dashboard y tareas en toda la app
+      _invalidateAll();
+
       state = state.copyWith(
         isLoading: false,
         updatedReservation: reservation,
-        successMessage: 'Check-out realizado exitosamente.',
+        successMessage:
+            'Check-out realizado. Tarea de limpieza enviada al wearable.',
       );
       return true;
     } catch (e) {

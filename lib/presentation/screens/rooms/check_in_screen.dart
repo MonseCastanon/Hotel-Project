@@ -108,7 +108,7 @@ class CheckInScreen extends ConsumerWidget {
               child: ElevatedButton.icon(
                 onPressed: state.isLoading
                     ? null
-                    : () => notifier.performCheckIn(reservationId),
+                    : () => notifier.performCheckIn(reservationId, roomNumber),
                 icon: state.isLoading
                     ? const SizedBox(
                         width: 18,
