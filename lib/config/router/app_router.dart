@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
+import 'package:hotel_app/presentation/providers/auth/auth_provider.dart';
 import 'package:hotel_app/presentation/screens/screens.dart';
 import 'package:hotel_app/presentation/widgets/shared/main_scaffold.dart';
 
@@ -18,19 +19,50 @@ abstract class AppRoutes {
 
   // Reservaciones
   static const reservations = '/reservations';
+
+  // Perfil
+  static const profile = '/profile';
 }
 
 // ─────────────────────────── GoRouter Provider ───────────────────────────────
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
     routes: _routes,
     errorBuilder: (context, state) => RouterErrorScreen(
       error: state.error?.message ?? 'Ruta no encontrada',
     ),
+    redirect: (context, state) {
+      final authState = ref.read(authProvider);
+
+      // Espera a que se inicialice (loading)
+      if (authState.isLoading) return null;
+
+      final isAuthenticated = authState.isAuthenticated;
+      final location = state.uri.toString();
+
+      final isPublic = location == AppRoutes.login || location == AppRoutes.splash;
+
+      // No autenticado → redirige a login (salvo que ya esté ahí)
+      if (!isAuthenticated && !isPublic) return AppRoutes.login;
+
+      // Autenticado y en login/splash → redirige a dashboard
+      if (isAuthenticated && isPublic) return AppRoutes.dashboard;
+
+      return null; // sin redireccion
+    },
   );
+
+  // Escucha cambios de authProvider para refrescar el router
+  ref.listen(authProvider, (previous, next) {
+    if (previous?.isAuthenticated != next.isAuthenticated) {
+      router.refresh();
+    }
+  });
+
+  return router;
 });
 
 // ─────────────────────────── Rutas ───────────────────────────────────────────
@@ -127,6 +159,17 @@ final List<RouteBase> _routes = [
             path: AppRoutes.reservations,
             name: 'reservations',
             builder: (context, state) => const ReservationsScreen(),
+          ),
+        ],
+      ),
+
+      // Branch 3 — Perfil
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: AppRoutes.profile,
+            name: 'profile',
+            builder: (context, state) => const ProfileScreen(),
           ),
         ],
       ),
