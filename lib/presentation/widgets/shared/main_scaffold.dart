@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
 
 /// Scaffold principal que contiene la BottomNavigationBar.
-/// Envuelve las tres pantallas principales: Dashboard, Habitaciones, Reservaciones.
+/// Envuelve las cuatro pantallas principales: Dashboard, Habitaciones, Reservaciones, Perfil.
 class MainScaffold extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
@@ -56,6 +56,11 @@ class _BottomNav extends StatelessWidget {
           selectedIcon:
               Icon(Icons.event_note_rounded, color: AppColors.primary),
           label: 'Reservaciones',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.person_outline_rounded),
+          selectedIcon: Icon(Icons.person_rounded, color: AppColors.primary),
+          label: 'Perfil',
         ),
       ],
     );
