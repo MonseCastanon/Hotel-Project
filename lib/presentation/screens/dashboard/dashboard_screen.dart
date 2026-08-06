@@ -6,6 +6,7 @@ import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/presentation/providers/auth/auth_provider.dart';
 import 'package:hotel_app/presentation/providers/dashboard/dashboard_provider.dart';
 import 'package:hotel_app/presentation/widgets/dashboard/tasks_panel_widget.dart';
+import 'package:hotel_app/presentation/widgets/dashboard/send_alert_dialog.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -177,36 +178,26 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                     const SizedBox(height: 16),
 
-                    // ── Acceso rápido ──────────────────────────────
-                    _SectionTitle(title: 'Acceso rápido'),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _QuickAccessCard(
-                            icon: Icons.bed_rounded,
-                            label: 'Habitaciones',
-                            color: AppColors.primary,
-                            onTap: () => context.go('/rooms'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _QuickAccessCard(
-                            icon: Icons.event_note_rounded,
-                            label: 'Reservaciones',
-                            color: const Color(0xFF5C6BC0),
-                            onTap: () => context.go('/reservations'),
-                          ),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 24),
                   ]),
                 ),
               ),
             ],
           ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (_) => const SendAlertDialog(),
+          );
+        },
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.send_rounded, color: Colors.white),
+        label: const Text(
+          'Alerta Wearable',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -524,54 +515,6 @@ class _ReservationTile extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _QuickAccessCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _QuickAccessCard({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color, color.withValues(alpha: 0.75)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white, size: 30),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

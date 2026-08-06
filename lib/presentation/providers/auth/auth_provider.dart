@@ -53,6 +53,11 @@ class AuthNotifier extends Notifier<AuthState> {
       throw Exception('Ingresa un correo válido');
     }
 
+    // Validación estricta local
+    if (email.trim().toLowerCase() != 'admin@hotel.com' || password != 'admin123') {
+      throw Exception('Credenciales incorrectas');
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', 'demo-token-${DateTime.now().millisecondsSinceEpoch}');
     await prefs.setString('auth_email', email.trim().toLowerCase());
