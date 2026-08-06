@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hotel_app/config/router/app_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
 import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/presentation/providers/rooms/room_detail_provider.dart';
@@ -17,13 +19,13 @@ class RoomDetailScreen extends ConsumerStatefulWidget {
 
 class _RoomDetailScreenState extends ConsumerState<RoomDetailScreen> {
   @override
-void initState() {
-  super.initState();
+  void initState() {
+    super.initState();
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    ref.read(roomDetailProvider.notifier).loadRoom(widget.roomId);
-  });
-}
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(roomDetailProvider.notifier).loadRoom(widget.roomId);
+    });
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -41,6 +43,16 @@ void initState() {
       ),
       _ when state.room != null => Scaffold(
         body: _RoomDetailBody(room: state.room!),
+        floatingActionButton: state.room!.status == RoomStatus.occupied
+            ? FloatingActionButton.extended(
+                onPressed: () => context.go(AppRoutes.reservations),
+                icon: const Icon(Icons.bookmark_border_rounded),
+                label: const Text('Ver reservación activa'),
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              )
+            : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
       _ => const Scaffold(body: SizedBox.shrink()),
     };

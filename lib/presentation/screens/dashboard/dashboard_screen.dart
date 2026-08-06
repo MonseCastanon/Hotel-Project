@@ -19,13 +19,14 @@ class DashboardScreen extends ConsumerWidget {
 
     // Saludo dinámico según hora del día
     final hour = DateTime.now().hour;
-    final greeting = hour < 12
-        ? 'Buenos días'
-        : hour < 19
-            ? 'Buenas tardes'
-            : 'Buenas noches';
-    // Email abreviado para el subtítulo
-    final userEmail = authState.email ?? 'recepción';
+    final greeting = (hour >= 5 && hour < 12)
+        ? '¡Buenos días!'
+        : (hour >= 12 && hour < 19)
+            ? '¡Buenas tardes!'
+            : '¡Buenas noches!';
+    // Email o nombre para el usuario autenticado
+    final userEmail = authState.email ?? 'Recepción';
+    final userName = userEmail.contains('@') ? userEmail.split('@').first : userEmail;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -53,9 +54,9 @@ class DashboardScreen extends ConsumerWidget {
                         color: Colors.white.withValues(alpha: 0.85),
                       ),
                     ),
-                    const Text(
-                      'Panel de control',
-                      style: TextStyle(
+                    Text(
+                      'Hola, $userName',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -74,17 +75,29 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ),
               actions: [
-                // Email del usuario
+                // Badge de usuario autenticado
                 Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: Center(
-                    child: Text(
-                      userEmail.split('@').first,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.person_outline, size: 14, color: Colors.white),
+                        const SizedBox(width: 4),
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
