@@ -142,6 +142,41 @@ class FirebaseTaskService {
     return taskId;
   }
 
+  /// Crea una alerta manual desde el Dashboard hacia el wearable.
+  Future<String> createManualAlert({
+    required String roomId,
+    required int roomNumber,
+    required String taskType,
+    required String description,
+    required String guestName,
+  }) async {
+    // 1. Guardamos en la colección 'tasks' para que el Dashboard la siga mostrando en "Tareas Activas"
+    final taskId = await _createTask(
+      roomId: roomId,
+      roomNumber: roomNumber,
+      taskType: taskType,
+      description: description,
+      guestName: guestName,
+      priority: 5,
+    );
+
+    // 2. Guardamos en la colección 'alerts' para que el Wearable (reloj) la lea en su nueva estructura
+    final alertId = 'alert-${DateTime.now().millisecondsSinceEpoch}';
+    final message = 'Hab. $roomNumber: $description';
+
+    await _firestore.collection('alerts').doc(alertId).set({
+      'id': alertId,
+      'taskId': taskId, // Referencia opcional a la tarea original
+      'message': message,
+      'severity': 'high',
+      'roomId': roomId,
+      'createdAt': DateTime.now().toIso8601String(),
+      'isAcknowledged': false,
+    });
+
+    return alertId;
+  }
+
   // ── Leer (Stream) ──────────────────────────────────────────────────────────
 
   /// Stream de tareas activas (pendientes + en progreso), ordenadas por prioridad.
