@@ -259,6 +259,8 @@ class _RoomStatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return GridView.count(
       shrinkWrap: true,
       padding: EdgeInsets.zero,
@@ -278,19 +280,20 @@ class _RoomStatsGrid extends StatelessWidget {
           label: 'Ocupadas',
           value: stats.occupied,
           icon: Icons.person_rounded,
-          color: AppColors.primary,
+          color: isDarkMode ? Colors.orange.shade700: AppColors.primary,
         ),
         _StatCard(
           label: 'Reservadas',
           value: stats.reserved,
           icon: Icons.bookmark_rounded,
-          color: const Color(0xFF5C6BC0),
+          color: isDarkMode ? Colors.blue[200]! : const Color(0xFF5C6BC0),
         ),
         _StatCard(
           label: 'Mantenimiento',
           value: stats.maintenance,
           icon: Icons.build_outlined,
-          color: Colors.orange.shade700,
+          //color: const Color.fromARGB(255, 36, 36, 36),
+          color: isDarkMode ? const Color.fromARGB(255, 211, 211, 211)! : const Color.fromARGB(255, 37, 37, 36),
         ),
       ],
     );
