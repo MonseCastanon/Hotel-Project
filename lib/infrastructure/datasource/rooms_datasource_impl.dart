@@ -1,84 +1,86 @@
-import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/infrastructure/mappers/room_mapper.dart';
+import 'package:hotel_app/infrastructure/models/rooms/room_model.dart';
 
-/// Implementación concreta de [RoomsDataSource] usando Dio para llamadas al API REST.
+/// Implementación concreta de [RoomsDataSource] usando Firebase Firestore.
 class RoomsDataSourceImpl implements RoomsDataSource {
-  final Dio _dio;
+  final FirebaseFirestore _firestore;
 
-  RoomsDataSourceImpl(this._dio);
+  RoomsDataSourceImpl(this._firestore);
+
+  CollectionReference<Map<String, dynamic>> get _rooms =>
+      _firestore.collection('rooms');
 
   @override
   Future<List<Room>> getRooms({RoomStatus? status, RoomType? type}) async {
     try {
-      final queryParams = <String, String>{};
-      if (status != null) queryParams['status'] = status.name;
-      if (type != null) queryParams['type'] = type.name;
+      Query<Map<String, dynamic>> query = _rooms;
 
-      final response = await _dio.get(
-        '/rooms',
-        queryParameters: queryParams.isNotEmpty ? queryParams : null,
-      );
+      if (status != null) {
+        query = query.where('status', isEqualTo: status.name);
+      }
+      if (type != null) {
+        query = query.where('roomType', isEqualTo: type.name);
+      }
 
-      final List<dynamic> data = response.data is List
-          ? response.data
-          : response.data['data'] ?? response.data['rooms'] ?? [];
+      final snapshot = await query.get();
+      final rooms = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return RoomMapper.fromJson(data);
+      }).toList();
 
-      return RoomMapper.fromJsonList(data);
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'obtener habitaciones');
+      return rooms;
+    } catch (e) {
+      throw Exception('Error al obtener habitaciones de Firebase: $e');
     }
   }
 
   @override
   Future<Room> getRoomById(String id) async {
     try {
-      final response = await _dio.get('/rooms/$id');
-      final data = response.data is Map
-          ? response.data
-          : response.data['data'];
-
-      return RoomMapper.fromJson(data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'obtener habitación');
+      final doc = await _rooms.doc(id).get();
+      if (!doc.exists) throw Exception('Habitación no encontrada');
+      
+      final data = doc.data()!;
+      data['id'] = doc.id;
+      return RoomMapper.fromJson(data);
+    } catch (e) {
+      throw Exception('Error al obtener habitación: $e');
     }
   }
 
   @override
   Future<Room> updateRoomStatus(String id, RoomStatus newStatus) async {
     try {
-      final response = await _dio.patch(
-        '/rooms/$id/status',
-        data: {'status': newStatus.name},
-      );
-      final data = response.data is Map
-          ? response.data
-          : response.data['data'];
-
-      return RoomMapper.fromJson(data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'actualizar estado de habitación');
+      await _rooms.doc(id).update({'status': newStatus.name});
+      return await getRoomById(id);
+    } catch (e) {
+      throw Exception('Error al actualizar habitación: $e');
     }
   }
 
-  /// Convierte un [DioException] en un mensaje de error legible
-  Exception _handleDioError(DioException e, String action) {
-    final statusCode = e.response?.statusCode;
-    final message = e.response?.data?['message'] ?? e.message ?? 'Error desconocido';
+  /// Método para poblar la base de datos con cuartos fijos si está vacía
+  Future<void> seedRoomsIfEmpty() async {
+    final snapshot = await _rooms.limit(1).get();
+    if (snapshot.docs.isNotEmpty) return;
 
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout) {
-      return Exception('Tiempo de espera agotado al $action. Verifica tu conexión.');
+    final defaultRooms = [
+      const RoomModel(id: 'room-101', roomNumber: 101, roomType: 'single', status: 'available', pricePerNight: 50.0, description: 'Habitación Sencilla Estándar', images: [], capacity: 1, amenities: ['TV', 'WiFi']),
+      const RoomModel(id: 'room-102', roomNumber: 102, roomType: 'single', status: 'available', pricePerNight: 50.0, description: 'Habitación Sencilla Estándar', images: [], capacity: 1, amenities: ['TV', 'WiFi']),
+      const RoomModel(id: 'room-103', roomNumber: 103, roomType: 'double', status: 'available', pricePerNight: 80.0, description: 'Habitación Doble Estándar', images: [], capacity: 2, amenities: ['TV', 'WiFi', 'AC']),
+      const RoomModel(id: 'room-104', roomNumber: 104, roomType: 'double', status: 'available', pricePerNight: 80.0, description: 'Habitación Doble Estándar', images: [], capacity: 2, amenities: ['TV', 'WiFi', 'AC']),
+      const RoomModel(id: 'room-201', roomNumber: 201, roomType: 'suite', status: 'available', pricePerNight: 150.0, description: 'Suite Principal con Vista', images: [], capacity: 4, amenities: ['TV', 'WiFi', 'AC', 'Minibar', 'Jacuzzi']),
+      const RoomModel(id: 'room-202', roomNumber: 202, roomType: 'suite', status: 'available', pricePerNight: 150.0, description: 'Suite Principal con Vista', images: [], capacity: 4, amenities: ['TV', 'WiFi', 'AC', 'Minibar', 'Jacuzzi']),
+      const RoomModel(id: 'room-301', roomNumber: 301, roomType: 'deluxe', status: 'available', pricePerNight: 120.0, description: 'Habitación Deluxe', images: [], capacity: 3, amenities: ['TV', 'WiFi', 'AC', 'Minibar']),
+      const RoomModel(id: 'room-302', roomNumber: 302, roomType: 'deluxe', status: 'available', pricePerNight: 120.0, description: 'Habitación Deluxe', images: [], capacity: 3, amenities: ['TV', 'WiFi', 'AC', 'Minibar']),
+      const RoomModel(id: 'room-401', roomNumber: 401, roomType: 'penthouse', status: 'available', pricePerNight: 300.0, description: 'Penthouse Exclusivo', images: [], capacity: 6, amenities: ['TV', 'WiFi', 'AC', 'Minibar', 'Jacuzzi', 'Cocina', 'Terraza']),
+      const RoomModel(id: 'room-402', roomNumber: 402, roomType: 'penthouse', status: 'available', pricePerNight: 300.0, description: 'Penthouse Exclusivo', images: [], capacity: 6, amenities: ['TV', 'WiFi', 'AC', 'Minibar', 'Jacuzzi', 'Cocina', 'Terraza']),
+    ];
+
+    for (var room in defaultRooms) {
+      await _rooms.doc(room.id).set(room.toJson());
     }
-    if (statusCode == 404) {
-      return Exception('Recurso no encontrado al $action.');
-    }
-    if (statusCode == 401) {
-      return Exception('No autorizado. Inicia sesión nuevamente.');
-    }
-    if (statusCode != null && statusCode >= 500) {
-      return Exception('Error del servidor al $action. Intenta más tarde.');
-    }
-    return Exception('Error al $action: $message');
   }
 }

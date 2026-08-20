@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_app/domain/domain.dart';
@@ -8,21 +8,11 @@ import 'package:hotel_app/infrastructure/infraestructure.dart';
 
 // ─────────────────────────── Infraestructura ────────────────────────────────
 
-/// Provider del cliente Dio configurado para el API
-final dioProvider = Provider<Dio>((ref) {
-  // Lee la URL base desde el .env cargado por flutter_dotenv
-  final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000/api';
-
-  return Dio(BaseOptions(
-    baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 15),
-    headers: {'Content-Type': 'application/json'},
-  ));
-});
-
 final roomsDataSourceProvider = Provider<RoomsDataSource>((ref) {
-  return RoomsDataSourceImpl(ref.watch(dioProvider));
+  final dataSource = RoomsDataSourceImpl(FirebaseFirestore.instance);
+  // Se siembran los cuartos de manera asíncrona (fuego y olvido)
+  dataSource.seedRoomsIfEmpty();
+  return dataSource;
 });
 
 /// Provider del repositorio de habitaciones
@@ -142,6 +132,20 @@ class RoomsNotifier extends Notifier<RoomsState> {
       clearCapacity: capacity == null,
     );
     await loadRooms();
+  }
+
+  /// Actualiza el estado de una habitación
+  Future<void> updateRoomStatus(String roomId, RoomStatus status) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _repository.updateRoomStatus(roomId, status);
+      await loadRooms();
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString().replaceFirst('Exception: ', ''),
+      );
+    }
   }
 }
 

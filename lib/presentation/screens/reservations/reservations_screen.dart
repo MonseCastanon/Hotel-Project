@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hotel_app/domain/domain.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
-import 'package:hotel_app/domain/domain.dart';
+import 'package:hotel_app/domain/entities/user.dart';
+import 'package:hotel_app/presentation/providers/auth/auth_provider.dart';
 import 'package:hotel_app/presentation/providers/reservations/reservations_provider.dart';
 import 'package:hotel_app/presentation/widgets/reservations/reservations_card.dart';
+import 'package:hotel_app/presentation/widgets/reservations/create_reservation_dialog.dart';
 
 /// Pantalla del listado de reservaciones
 class ReservationsScreen extends ConsumerWidget {
@@ -25,6 +28,20 @@ class ReservationsScreen extends ConsumerWidget {
           ),
         ],
       ),
+      floatingActionButton: (ref.watch(authProvider).role == UserRole.admin || 
+                             ref.watch(authProvider).role == UserRole.receptionist)
+          ? FloatingActionButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => const CreateReservationDialog(),
+                );
+              },
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
       body: Column(
         children: [
           const SizedBox(height: 12),

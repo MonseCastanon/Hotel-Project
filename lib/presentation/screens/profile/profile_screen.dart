@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
+import 'package:hotel_app/domain/entities/user.dart';
 import 'package:hotel_app/presentation/providers/auth/auth_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -24,7 +28,7 @@ class ProfileScreen extends ConsumerWidget {
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
-              background: _ProfileHeader(email: authState.email),
+              background: _ProfileHeader(email: authState.email, roleLabel: authState.role?.label ?? ''),
             ),
           ),
 
@@ -45,8 +49,8 @@ class ProfileScreen extends ConsumerWidget {
                     _InfoRow(
                       icon: Icons.badge_outlined,
                       label: 'Rol',
-                      value: 'Recepcionista',
-                      trailing: _RoleBadge(),
+                      value: authState.role?.label ?? 'Desconocido',
+                      trailing: _RoleBadge(roleLabel: authState.role?.label ?? ''),
                     ),
                     const Divider(height: 1),
                     _InfoRow(
@@ -67,30 +71,58 @@ class ProfileScreen extends ConsumerWidget {
 
                 const SizedBox(height: 20),
 
-                // ── Tarjeta de configuración ───────────────────────────────
-                _InfoCard(
-                  children: [
-                    _ActionRow(
-                      icon: Icons.notifications_outlined,
-                      label: 'Notificaciones',
-                      onTap: () {},
-                    ),
-                    const Divider(height: 1),
-                    _ActionRow(
-                      icon: Icons.dark_mode_outlined,
-                      label: 'Apariencia',
-                      onTap: () {},
-                    ),
-                    const Divider(height: 1),
-                    _ActionRow(
-                      icon: Icons.help_outline_rounded,
-                      label: 'Ayuda y soporte',
-                      onTap: () {},
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 28),
+                // ── Tarjeta de configuración (Wearable) ───────────────────────────────
+                if (authState.role == UserRole.housekeeper) ...[
+                  _InfoCard(
+                    children: [
+                      _ActionRow(
+                        icon: Icons.watch_outlined,
+                        label: 'Vincular Reloj (Wearable)',
+                        onTap: () async {
+                          final userId = FirebaseAuth.instance.currentUser?.uid;
+                          if (userId == null) return;
+                          
+                          // Generar PIN de 4 dígitos
+                          final pin = (1000 + Random().nextInt(9000)).toString();
+                          
+                          try {
+                            // Guardar en Firestore
+                            await FirebaseFirestore.instance.collection('users').doc(userId).set({
+                              'wearablePin': pin,
+                              'pinCreatedAt': FieldValue.serverTimestamp(),
+                            }, SetOptions(merge: true));
+                            
+                            // Mostrar PIN al usuario
+                            if (context.mounted) {
+                              showDialog(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  title: const Text('Pin Generado'),
+                                  content: Text(
+                                    'Ingresa este código en tu reloj:\n\n$pin',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 8),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Entendido'),
+                                    )
+                                  ],
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                            }
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                ],
 
                 // ── Botón cerrar sesión ────────────────────────────────────
                 _LogoutButton(
@@ -125,7 +157,8 @@ class ProfileScreen extends ConsumerWidget {
 
 class _ProfileHeader extends StatelessWidget {
   final String? email;
-  const _ProfileHeader({required this.email});
+  final String roleLabel;
+  const _ProfileHeader({required this.email, required this.roleLabel});
 
   /// Iniciales del email para el avatar
   String get _initials {
@@ -193,7 +226,7 @@ class _ProfileHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            _RoleBadge(light: true),
+            _RoleBadge(light: true, roleLabel: roleLabel),
             const SizedBox(height: 16),
           ],
         ),
@@ -206,7 +239,8 @@ class _ProfileHeader extends StatelessWidget {
 
 class _RoleBadge extends StatelessWidget {
   final bool light;
-  const _RoleBadge({this.light = false});
+  final String roleLabel;
+  const _RoleBadge({this.light = false, required this.roleLabel});
 
   @override
   Widget build(BuildContext context) {
@@ -234,12 +268,12 @@ class _RoleBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            'Recepcionista',
+            roleLabel.toUpperCase(),
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
               color: light ? Colors.white : AppColors.primary,
-              letterSpacing: 0.3,
+              letterSpacing: 0.5,
             ),
           ),
         ],
