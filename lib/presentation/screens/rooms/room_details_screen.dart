@@ -43,16 +43,6 @@ class _RoomDetailScreenState extends ConsumerState<RoomDetailScreen> {
       ),
       _ when state.room != null => Scaffold(
         body: _RoomDetailBody(room: state.room!),
-        floatingActionButton: state.room!.status == RoomStatus.occupied
-            ? FloatingActionButton.extended(
-                onPressed: () => context.go(AppRoutes.reservations),
-                icon: const Icon(Icons.bookmark_border_rounded),
-                label: const Text('Ver reservación activa'),
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              )
-            : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
       _ => const Scaffold(body: SizedBox.shrink()),
     };
@@ -192,6 +182,21 @@ class _RoomDetailBody extends StatelessWidget {
                         ),
                       )
                       .toList(),
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              // ── Botón Ver Reservación Activa ──
+              if (room.status == RoomStatus.occupied) ...[
+                ElevatedButton.icon(
+                  onPressed: () => context.go(AppRoutes.reservations),
+                  icon: const Icon(Icons.bookmark_border_rounded),
+                  label: const Text('Ver reservación activa'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
                 ),
                 const SizedBox(height: 80),
               ],

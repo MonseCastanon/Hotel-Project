@@ -44,18 +44,18 @@ class _BottomNav extends StatelessWidget {
         NavigationDestination(
           icon: Icon(Icons.dashboard_outlined),
           selectedIcon: Icon(Icons.dashboard_rounded, color: AppColors.primary),
-          label: 'Dashboard',
+          label: 'Inicio',
         ),
         NavigationDestination(
           icon: Icon(Icons.bed_outlined),
           selectedIcon: Icon(Icons.bed_rounded, color: AppColors.primary),
-          label: 'Habitaciones',
+          label: 'Cuartos',
         ),
         NavigationDestination(
           icon: Icon(Icons.event_note_outlined),
           selectedIcon:
               Icon(Icons.event_note_rounded, color: AppColors.primary),
-          label: 'Reservaciones',
+          label: 'Reservas',
         ),
         NavigationDestination(
           icon: Icon(Icons.person_outline_rounded),
