@@ -93,7 +93,7 @@ class ReservationModel {
   static ReservationStatus _parseStatus(String value) {
     return ReservationStatus.values.firstWhere(
       (e) => e.name == value,
-      orElse: () => ReservationStatus.pending,
+      orElse: () => ReservationStatus.newReservation,
     );
   }
 }

@@ -33,8 +33,10 @@ class RoomsScreen extends ConsumerWidget {
           RoomFilterBar(
             selectedStatus: state.selectedStatus,
             selectedType: state.selectedType,
+            selectedCapacity: state.selectedCapacity,
             onStatusChanged: notifier.filterByStatus,
             onTypeChanged: notifier.filterByType,
+            onCapacityChanged: notifier.filterByCapacity,
             onClearFilters: notifier.clearFilters,
           ),
           const SizedBox(height: 8),
@@ -85,6 +87,7 @@ class RoomsScreen extends ConsumerWidget {
         itemCount: state.rooms.length,
         itemBuilder: (_, i) => RoomCard(
           room: state.rooms[i],
+          showPrice: false,
           onTap: () => context.pushNamed(
             'roomDetail',
             pathParameters: {'roomId': state.rooms[i].id},

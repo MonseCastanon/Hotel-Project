@@ -68,7 +68,7 @@ class RoomsLocalDataSource implements RoomsDataSource {
       id: '6',
       roomNumber: 102,
       roomType: RoomType.single,
-      status: RoomStatus.maintenance,
+      status: RoomStatus.outOfOrder,
       pricePerNight: 820,
       description:
           'Habitación sencilla en proceso de renovación. Disponible próximamente con nuevas instalaciones.',

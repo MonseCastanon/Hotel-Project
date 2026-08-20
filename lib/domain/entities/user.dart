@@ -1,11 +1,28 @@
+/// Estados posibles de una cuenta de usuario
+enum UserStatus {
+  pending,
+  active,
+  rejected,
+  inactive;
+
+  String get label => switch (this) {
+        UserStatus.pending => 'Pendiente',
+        UserStatus.active => 'Activo',
+        UserStatus.rejected => 'Rechazado',
+        UserStatus.inactive => 'Inactivo',
+      };
+}
+
 /// Roles de usuario disponibles en el sistema del hotel
 enum UserRole {
+  unassigned,
   admin,
   receptionist,
   housekeeper,
   maintenance;
 
   String get label => switch (this) {
+        UserRole.unassigned => 'Sin asignar',
         UserRole.admin => 'Administrador',
         UserRole.receptionist => 'Recepcionista',
         UserRole.housekeeper => 'Ama de llaves',
@@ -18,8 +35,8 @@ class User {
   final String name;
   final String email;
   final UserRole role;
+  final UserStatus status;
   final String? avatarUrl;
-  final bool isActive;
   final DateTime createdAt;
 
   const User({
@@ -27,8 +44,8 @@ class User {
     required this.name,
     required this.email,
     required this.role,
+    this.status = UserStatus.pending,
     this.avatarUrl,
-    this.isActive = true,
     required this.createdAt,
   });
 
@@ -38,14 +55,17 @@ class User {
   /// Retorna true si el usuario es recepcionista
   bool get isReceptionist => role == UserRole.receptionist;
 
+  /// Retorna true si el usuario tiene rol asignado (no es unassigned)
+  bool get hasRole => role != UserRole.unassigned;
+
   /// Crea una copia de la entidad con los campos modificados
   User copyWith({
     String? id,
     String? name,
     String? email,
     UserRole? role,
+    UserStatus? status,
     String? avatarUrl,
-    bool? isActive,
     DateTime? createdAt,
   }) {
     return User(
@@ -53,15 +73,15 @@ class User {
       name: name ?? this.name,
       email: email ?? this.email,
       role: role ?? this.role,
+      status: status ?? this.status,
       avatarUrl: avatarUrl ?? this.avatarUrl,
-      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
     );
   }
 
   @override
   String toString() =>
-      'User(id: $id, name: $name, role: ${role.label}, isActive: $isActive)';
+      'User(id: $id, name: $name, role: ${role.label}, status: ${status.label})';
 
   @override
   bool operator ==(Object other) =>

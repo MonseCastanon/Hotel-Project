@@ -18,15 +18,21 @@ enum RoomType {
 /// Estados posibles de una habitación
 enum RoomStatus {
   available,
+  reserved,
   occupied,
-  maintenance,
-  reserved;
+  pendingCleaning,
+  cleaning,
+  cleaned,
+  outOfOrder;
 
   String get label => switch (this) {
         RoomStatus.available => 'Disponible',
-        RoomStatus.occupied => 'Ocupada',
-        RoomStatus.maintenance => 'Mantenimiento',
         RoomStatus.reserved => 'Reservada',
+        RoomStatus.occupied => 'Ocupada',
+        RoomStatus.pendingCleaning => 'Pendiente Limpieza',
+        RoomStatus.cleaning => 'En Limpieza',
+        RoomStatus.cleaned => 'Limpia',
+        RoomStatus.outOfOrder => 'Fuera de Servicio',
       };
 }
 

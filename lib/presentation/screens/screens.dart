@@ -1,4 +1,6 @@
 export 'auth/login_screen.dart';
+export 'auth/register_screen.dart';
+export 'auth/pending_approval_screen.dart';
 export 'splash/splash_screen.dart';
 export 'dashboard/dashboard_screen.dart';
 export 'rooms/rooms_screen.dart';
@@ -7,3 +9,5 @@ export 'rooms/check_in_screen.dart';
 export 'rooms/check_out_screen.dart';
 export 'reservations/reservations_screen.dart';
 export 'profile/profile_screen.dart';
+export 'admin/employees_screen.dart';
+export 'admin/employee_detail_screen.dart';

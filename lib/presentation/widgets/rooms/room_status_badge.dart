@@ -17,14 +17,20 @@ class RoomStatusBadge extends StatelessWidget {
         RoomStatus.available => const Color(0xFF2E7D32),
         RoomStatus.occupied => const Color(0xFFC62828),
         RoomStatus.reserved => AppColors.primary,
-        RoomStatus.maintenance => const Color(0xFFE65100),
+        RoomStatus.pendingCleaning => const Color(0xFFF57C00),
+        RoomStatus.cleaning => const Color(0xFF1976D2),
+        RoomStatus.cleaned => const Color(0xFF388E3C),
+        RoomStatus.outOfOrder => const Color(0xFFE65100),
       };
 
   IconData get _icon => switch (status) {
         RoomStatus.available => Icons.check_circle_outline,
         RoomStatus.occupied => Icons.person,
         RoomStatus.reserved => Icons.event_available,
-        RoomStatus.maintenance => Icons.build_outlined,
+        RoomStatus.pendingCleaning => Icons.cleaning_services_outlined,
+        RoomStatus.cleaning => Icons.cleaning_services,
+        RoomStatus.cleaned => Icons.verified_outlined,
+        RoomStatus.outOfOrder => Icons.build_outlined,
       };
 
   @override

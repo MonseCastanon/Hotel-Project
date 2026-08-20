@@ -7,8 +7,16 @@ import 'package:hotel_app/presentation/widgets/rooms/room_status_badge.dart';
 class RoomCard extends StatelessWidget {
   final Room room;
   final VoidCallback onTap;
+  /// Si es `true`, muestra el precio por noche. Por defecto `false`
+  /// (el precio solo se muestra en el resumen de check-out).
+  final bool showPrice;
 
-  const RoomCard({super.key, required this.room, required this.onTap});
+  const RoomCard({
+    super.key,
+    required this.room,
+    required this.onTap,
+    this.showPrice = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -79,14 +87,15 @@ class RoomCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      // ── Precio ──
-                      Text(
-                        '\$${room.pricePerNight.toStringAsFixed(0)}/noche',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
+                      // ── Precio (solo si showPrice == true) ──
+                      if (showPrice)
+                        Text(
+                          '\$${room.pricePerNight.toStringAsFixed(0)}/noche',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ],

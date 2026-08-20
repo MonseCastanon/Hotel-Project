@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
 import 'package:hotel_app/domain/domain.dart';
+import 'package:hotel_app/domain/entities/user.dart';
 import 'package:hotel_app/presentation/providers/auth/auth_provider.dart';
 import 'package:hotel_app/presentation/providers/dashboard/dashboard_provider.dart';
 import 'package:hotel_app/presentation/widgets/dashboard/tasks_panel_widget.dart';
@@ -42,9 +43,13 @@ class DashboardScreen extends ConsumerWidget {
               floating: true,
               pinned: true,
               backgroundColor: AppColors.primary,
+              leading: IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
               flexibleSpace: FlexibleSpaceBar(
                 titlePadding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    const EdgeInsets.only(left: 48, right: 20, bottom: 14),
                 title: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,46 +142,50 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     // ── Alertas (check-ins/outs próximos) ──────────
-                    _SectionTitle(
-                      title: 'Alertas de actividad',
-                      subtitle: state.alerts.isEmpty
-                          ? null
-                          : '${state.alerts.length} pendiente(s)',
-                    ),
-                    const SizedBox(height: 10),
-                    if (state.alerts.isEmpty)
-                      _EmptyCard(
-                        icon: Icons.notifications_none_rounded,
-                        message: 'Sin alertas por ahora',
-                      )
-                    else
-                      ...state.alerts.map(
-                        (alert) => _AlertCard(alert: alert),
+                    if (authState.role == UserRole.admin || authState.role == UserRole.receptionist) ...[
+                      _SectionTitle(
+                        title: 'Alertas de actividad',
+                        subtitle: state.alerts.isEmpty
+                            ? null
+                            : '${state.alerts.length} pendiente(s)',
                       ),
-                    const SizedBox(height: 24),
+                      const SizedBox(height: 10),
+                      if (state.alerts.isEmpty)
+                        _EmptyCard(
+                          icon: Icons.notifications_none_rounded,
+                          message: 'Sin alertas por ahora',
+                        )
+                      else
+                        ...state.alerts.map(
+                          (alert) => _AlertCard(alert: alert),
+                        ),
+                      const SizedBox(height: 24),
+                    ],
 
                     // ── Tareas activas (en tiempo real desde Firebase) ──
                     const TasksPanelWidget(),
                     const SizedBox(height: 24),
 
                     // ── Próximas reservaciones ─────────────────────
-                    _SectionTitle(
-                      title: 'Reservaciones próximas',
-                      subtitle: state.upcomingReservations.isEmpty
-                          ? null
-                          : '${state.upcomingReservations.length} activa(s)',
-                    ),
-                    const SizedBox(height: 10),
-                    if (state.upcomingReservations.isEmpty)
-                      _EmptyCard(
-                        icon: Icons.event_available_outlined,
-                        message: 'Sin reservaciones próximas',
-                      )
-                    else
-                      ...state.upcomingReservations.map(
-                        (r) => _ReservationTile(reservation: r),
+                    if (authState.role == UserRole.admin || authState.role == UserRole.receptionist) ...[
+                      _SectionTitle(
+                        title: 'Reservaciones próximas',
+                        subtitle: state.upcomingReservations.isEmpty
+                            ? null
+                            : '${state.upcomingReservations.length} activa(s)',
                       ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 10),
+                      if (state.upcomingReservations.isEmpty)
+                        _EmptyCard(
+                          icon: Icons.event_available_outlined,
+                          message: 'Sin reservaciones próximas',
+                        )
+                      else
+                        ...state.upcomingReservations.map(
+                          (r) => _ReservationTile(reservation: r),
+                        ),
+                      const SizedBox(height: 16),
+                    ],
 
                     const SizedBox(height: 24),
                   ]),

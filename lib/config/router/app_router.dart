@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
+import 'package:hotel_app/domain/entities/user.dart';
 import 'package:hotel_app/presentation/providers/auth/auth_provider.dart';
 import 'package:hotel_app/presentation/screens/screens.dart';
 import 'package:hotel_app/presentation/widgets/shared/main_scaffold.dart';
@@ -12,6 +13,8 @@ abstract class AppRoutes {
   // Inicio
   static const splash = '/splash';
   static const login = '/login';
+  static const register = '/register';
+  static const pending = '/pending-approval';
   static const dashboard = '/dashboard';
 
   // Habitaciones
@@ -22,6 +25,9 @@ abstract class AppRoutes {
 
   // Perfil
   static const profile = '/profile';
+
+  // Admin
+  static const employees = '/admin/employees';
 }
 
 // ─────────────────────────── GoRouter Provider ───────────────────────────────
@@ -41,15 +47,49 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (authState.isLoading) return null;
 
       final isAuthenticated = authState.isAuthenticated;
+      final status = authState.status;
       final location = state.uri.toString();
 
-      final isPublic = location == AppRoutes.login || location == AppRoutes.splash;
+      final isPublic = location == AppRoutes.login ||
+          location == AppRoutes.splash ||
+          location == AppRoutes.register;
 
       // No autenticado → redirige a login (salvo que ya esté ahí)
       if (!isAuthenticated && !isPublic) return AppRoutes.login;
 
-      // Autenticado y en login/splash → redirige a dashboard
-      if (isAuthenticated && isPublic) return AppRoutes.dashboard;
+      if (isAuthenticated) {
+        final role = authState.role;
+
+        // Verificar estado pendiente o inactivo/rechazado
+        if (status?.name != 'active' && location != AppRoutes.pending) {
+          return AppRoutes.pending;
+        }
+        
+        if (status?.name == 'active' && location == AppRoutes.pending) {
+          return AppRoutes.dashboard;
+        }
+
+        if (status?.name == 'active' && isPublic) {
+          return AppRoutes.dashboard;
+        }
+
+        // GUARDAS POR ROL
+        if (status?.name == 'active') {
+          // Solo el gerente puede acceder a admin
+          if (location.startsWith('/admin') && role != UserRole.admin) {
+            return AppRoutes.dashboard;
+          }
+
+          // Mucamas y mantenimiento NO pueden acceder a reservaciones ni check-in/out
+          if (role == UserRole.housekeeper || role == UserRole.maintenance) {
+            if (location.startsWith('/reservations') || 
+                location.contains('check-in') || 
+                location.contains('check-out')) {
+              return AppRoutes.dashboard;
+            }
+          }
+        }
+      }
 
       return null; // sin redireccion
     },
@@ -80,6 +120,31 @@ final List<RouteBase> _routes = [
     path: AppRoutes.login,
     name: 'login',
     builder: (context, state) => const LoginScreen(),
+  ),
+  GoRoute(
+    path: AppRoutes.register,
+    name: 'register',
+    builder: (context, state) => const RegisterScreen(),
+  ),
+  GoRoute(
+    path: AppRoutes.pending,
+    name: 'pending',
+    builder: (context, state) => const PendingApprovalScreen(),
+  ),
+  GoRoute(
+    path: AppRoutes.employees,
+    name: 'employees',
+    builder: (context, state) => const EmployeesScreen(),
+    routes: [
+      GoRoute(
+        path: ':id',
+        name: 'employeeDetail',
+        builder: (context, state) {
+          final employee = state.extra as User;
+          return EmployeeDetailScreen(employee: employee);
+        },
+      ),
+    ],
   ),
 
   // ── Shell principal con Bottom Navigation ────────────────────────────────
