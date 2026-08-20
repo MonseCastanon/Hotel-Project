@@ -1,12 +1,16 @@
-import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/infrastructure/mappers/reservation_mapper.dart';
+import 'package:hotel_app/infrastructure/models/reservation/reservation_model.dart';
 
-/// Implementación concreta de [ReservationsDataSource] usando Dio para llamadas al API REST.
+/// Implementación concreta de [ReservationsDataSource] usando Firebase Firestore.
 class ReservationsDataSourceImpl implements ReservationsDataSource {
-  final Dio _dio;
+  final FirebaseFirestore _firestore;
 
-  ReservationsDataSourceImpl(this._dio);
+  ReservationsDataSourceImpl(this._firestore);
+
+  CollectionReference<Map<String, dynamic>> get _reservations =>
+      _firestore.collection('reservations');
 
   @override
   Future<List<Reservation>> getReservations({
@@ -14,60 +18,64 @@ class ReservationsDataSourceImpl implements ReservationsDataSource {
     String? guestId,
   }) async {
     try {
-      final queryParams = <String, String>{};
-      if (status != null) queryParams['status'] = status.name;
-      if (guestId != null) queryParams['guestId'] = guestId;
+      Query<Map<String, dynamic>> query = _reservations;
 
-      final response = await _dio.get(
-        '/reservations',
-        queryParameters: queryParams.isNotEmpty ? queryParams : null,
-      );
+      if (status != null) {
+        query = query.where('status', isEqualTo: status.name);
+      }
+      if (guestId != null) {
+        query = query.where('guestId', isEqualTo: guestId);
+      }
 
-      final List<dynamic> data = response.data is List
-          ? response.data
-          : response.data['data'] ?? response.data['reservations'] ?? [];
+      final snapshot = await query.get();
+      final reservations = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return ReservationMapper.fromJson(data);
+      }).toList();
 
-      return ReservationMapper.fromJsonList(data);
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'obtener reservaciones');
+      return reservations;
+    } catch (e) {
+      throw Exception('Error al obtener reservaciones de Firebase: $e');
     }
   }
 
   @override
   Future<Reservation> getReservationById(String id) async {
     try {
-      final response = await _dio.get('/reservations/$id');
-      final data = response.data is Map
-          ? response.data
-          : response.data['data'];
-
-      return ReservationMapper.fromJson(data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'obtener reservación');
+      final doc = await _reservations.doc(id).get();
+      if (!doc.exists) throw Exception('Reservación no encontrada');
+      
+      final data = doc.data()!;
+      data['id'] = doc.id;
+      return ReservationMapper.fromJson(data);
+    } catch (e) {
+      throw Exception('Error al obtener reservación: $e');
     }
   }
 
   @override
   Future<Reservation> createReservation(CreateReservationParams params) async {
     try {
-      final response = await _dio.post(
-        '/reservations',
-        data: {
-          'roomId': params.roomId,
-          'guestId': params.guestId,
-          'guestName': params.guestName,
-          'checkIn': params.checkIn.toIso8601String(),
-          'checkOut': params.checkOut.toIso8601String(),
-          if (params.notes != null) 'notes': params.notes,
-        },
+      final docRef = _reservations.doc();
+      final reservation = ReservationModel(
+        id: docRef.id,
+        roomId: params.roomId,
+        guestId: params.guestId,
+        guestName: params.guestName,
+        checkIn: params.checkIn,
+        checkOut: params.checkOut,
+        companions: 0, // Por defecto en la creación
+        status: ReservationStatus.newReservation.name,
+        total: 0.0, // Se calcularía en backend/cloud function
+        createdAt: DateTime.now(),
+        notes: params.notes,
       );
-      final data = response.data is Map
-          ? response.data
-          : response.data['data'];
 
-      return ReservationMapper.fromJson(data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'crear reservación');
+      await docRef.set(reservation.toJson());
+      return reservation.toEntity();
+    } catch (e) {
+      throw Exception('Error al crear reservación: $e');
     }
   }
 
@@ -79,78 +87,39 @@ class ReservationsDataSourceImpl implements ReservationsDataSource {
     required DateTime expectedCheckOut,
   }) async {
     try {
-      final response = await _dio.post(
-        '/reservations/$reservationId/checkin',
-        data: {
-          'guestName': guestName,
-          'companions': companions,
-          'expectedCheckOut': expectedCheckOut.toIso8601String(),
-        },
-      );
-      final data = response.data is Map
-          ? response.data
-          : response.data['data'];
-
-      return ReservationMapper.fromJson(data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'realizar check-in');
+      await _reservations.doc(reservationId).update({
+        'status': ReservationStatus.checkedIn.name,
+        'guestName': guestName,
+        'companions': companions,
+        'checkOut': expectedCheckOut.toIso8601String(),
+      });
+      return await getReservationById(reservationId);
+    } catch (e) {
+      throw Exception('Error al realizar check-in: $e');
     }
   }
 
   @override
   Future<Reservation> checkOut(String reservationId) async {
     try {
-      final response =
-          await _dio.post('/reservations/$reservationId/checkout');
-      final data = response.data is Map
-          ? response.data
-          : response.data['data'];
-
-      return ReservationMapper.fromJson(data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'realizar check-out');
+      await _reservations.doc(reservationId).update({
+        'status': ReservationStatus.completed.name,
+      });
+      return await getReservationById(reservationId);
+    } catch (e) {
+      throw Exception('Error al realizar check-out: $e');
     }
   }
 
   @override
   Future<Reservation> cancelReservation(String reservationId) async {
     try {
-      final response =
-          await _dio.delete('/reservations/$reservationId');
-      final data = response.data is Map
-          ? response.data
-          : response.data['data'];
-
-      return ReservationMapper.fromJson(data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'cancelar reservación');
+      await _reservations.doc(reservationId).update({
+        'status': ReservationStatus.cancelled.name,
+      });
+      return await getReservationById(reservationId);
+    } catch (e) {
+      throw Exception('Error al cancelar reservación: $e');
     }
-  }
-
-  /// Convierte un [DioException] en un mensaje de error legible
-  Exception _handleDioError(DioException e, String action) {
-    final statusCode = e.response?.statusCode;
-    final message =
-        e.response?.data?['message'] ?? e.message ?? 'Error desconocido';
-
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout) {
-      return Exception(
-          'Tiempo de espera agotado al $action. Verifica tu conexión.');
-    }
-    if (statusCode == 404) {
-      return Exception('Recurso no encontrado al $action.');
-    }
-    if (statusCode == 401) {
-      return Exception('No autorizado. Inicia sesión nuevamente.');
-    }
-    if (statusCode == 409) {
-      return Exception(
-          'Conflicto al $action. La habitación puede no estar disponible.');
-    }
-    if (statusCode != null && statusCode >= 500) {
-      return Exception('Error del servidor al $action. Intenta más tarde.');
-    }
-    return Exception('Error al $action: $message');
   }
 }

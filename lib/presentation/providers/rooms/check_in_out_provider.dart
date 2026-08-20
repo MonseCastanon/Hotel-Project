@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/infrastructure/infraestructure.dart';
@@ -9,7 +10,7 @@ import 'package:hotel_app/presentation/providers/tasks/tasks_provider.dart';
 // ─────────────────────────── Infraestructura ────────────────────────────────
 
 final reservationsDataSourceProvider = Provider<ReservationsDataSource>((ref) {
-  return ReservationsDataSourceImpl(ref.watch(dioProvider));
+  return ReservationsDataSourceImpl(FirebaseFirestore.instance);
 });
 
 final reservationsRepositoryProvider = Provider<ReservationsRepository>((ref) {

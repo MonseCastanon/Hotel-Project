@@ -43,13 +43,9 @@ class DashboardScreen extends ConsumerWidget {
               floating: true,
               pinned: true,
               backgroundColor: AppColors.primary,
-              leading: IconButton(
-                icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
               flexibleSpace: FlexibleSpaceBar(
                 titlePadding:
-                    const EdgeInsets.only(left: 48, right: 20, bottom: 14),
+                    const EdgeInsets.only(left: 20, right: 20, bottom: 14),
                 title: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,17 +77,18 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ),
               actions: [
-                // Botón Alerta Wearable
-                IconButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => const SendAlertDialog(),
-                    );
-                  },
-                  icon: const Icon(Icons.send_rounded, color: Colors.white),
-                  tooltip: 'Enviar Alerta Wearable',
-                ),
+                // Botón Alerta Wearable (Sólo Admin/Recepción)
+                if (authState.role == UserRole.admin || authState.role == UserRole.receptionist)
+                  IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const SendAlertDialog(),
+                      );
+                    },
+                    icon: const Icon(Icons.send_rounded, color: Colors.white),
+                    tooltip: 'Enviar Alerta Wearable',
+                  ),
                 // Badge de usuario autenticado
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
