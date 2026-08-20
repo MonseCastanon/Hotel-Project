@@ -74,7 +74,15 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen> {
     }
 
     final notifier = ref.read(checkInOutProvider.notifier);
-    await notifier.performCheckIn(widget.reservationId, widget.roomNumber);
+    final companions = int.tryParse(_companionsCtrl.text) ?? 0;
+    
+    await notifier.performCheckIn(
+      widget.reservationId,
+      widget.roomNumber,
+      guestName: _guestNameCtrl.text.trim(),
+      companions: companions,
+      expectedCheckOut: _expectedCheckOut!,
+    );
   }
 
   @override

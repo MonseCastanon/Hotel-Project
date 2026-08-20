@@ -8,7 +8,17 @@ class CheckIn {
 
   const CheckIn(this._repository);
 
-  Future<Reservation> call(String reservationId) {
-    return _repository.checkIn(reservationId);
+  Future<Reservation> call({
+    required String reservationId,
+    required String guestName,
+    required int companions,
+    required DateTime expectedCheckOut,
+  }) {
+    return _repository.checkIn(
+      reservationId: reservationId,
+      guestName: guestName,
+      companions: companions,
+      expectedCheckOut: expectedCheckOut,
+    );
   }
 }

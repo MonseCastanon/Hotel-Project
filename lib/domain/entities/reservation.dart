@@ -24,6 +24,7 @@ class Reservation {
   final String guestName;
   final DateTime checkIn;
   final DateTime checkOut;
+  final int companions;
   final ReservationStatus status;
   final double total;
   final DateTime createdAt;
@@ -36,6 +37,7 @@ class Reservation {
     required this.guestName,
     required this.checkIn,
     required this.checkOut,
+    required this.companions,
     required this.status,
     required this.total,
     required this.createdAt,
@@ -61,6 +63,7 @@ class Reservation {
     String? guestName,
     DateTime? checkIn,
     DateTime? checkOut,
+    int? companions,
     ReservationStatus? status,
     double? total,
     DateTime? createdAt,
@@ -73,6 +76,7 @@ class Reservation {
       guestName: guestName ?? this.guestName,
       checkIn: checkIn ?? this.checkIn,
       checkOut: checkOut ?? this.checkOut,
+      companions: companions ?? this.companions,
       status: status ?? this.status,
       total: total ?? this.total,
       createdAt: createdAt ?? this.createdAt,

@@ -72,10 +72,21 @@ class ReservationsDataSourceImpl implements ReservationsDataSource {
   }
 
   @override
-  Future<Reservation> checkIn(String reservationId) async {
+  Future<Reservation> checkIn({
+    required String reservationId,
+    required String guestName,
+    required int companions,
+    required DateTime expectedCheckOut,
+  }) async {
     try {
-      final response =
-          await _dio.post('/reservations/$reservationId/checkin');
+      final response = await _dio.post(
+        '/reservations/$reservationId/checkin',
+        data: {
+          'guestName': guestName,
+          'companions': companions,
+          'expectedCheckOut': expectedCheckOut.toIso8601String(),
+        },
+      );
       final data = response.data is Map
           ? response.data
           : response.data['data'];

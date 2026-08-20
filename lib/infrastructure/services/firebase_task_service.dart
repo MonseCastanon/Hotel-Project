@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // ─────────────────────────── Modelo ──────────────────────────────────────────
@@ -12,6 +13,7 @@ class HotelTask {
   final String status;
   final String description;
   final String guestName;
+  final String assignedBy;
   final DateTime createdAt;
   final int priority;
 
@@ -23,6 +25,7 @@ class HotelTask {
     required this.status,
     required this.description,
     required this.guestName,
+    required this.assignedBy,
     required this.createdAt,
     required this.priority,
   });
@@ -36,6 +39,7 @@ class HotelTask {
       status: data['status'] as String? ?? 'pending',
       description: data['description'] as String? ?? '',
       guestName: data['guestName'] as String? ?? '',
+      assignedBy: data['assignedBy'] as String? ?? '',
       createdAt: data['createdAt'] != null
           ? DateTime.tryParse(data['createdAt'] as String) ?? DateTime.now()
           : DateTime.now(),
@@ -127,6 +131,8 @@ class FirebaseTaskService {
     int priority = 3,
   }) async {
     final taskId = 'task-${DateTime.now().millisecondsSinceEpoch}';
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
+    
     await _firestore.collection('tasks').doc(taskId).set({
       'id': taskId,
       'roomId': roomId,
@@ -135,6 +141,7 @@ class FirebaseTaskService {
       'status': 'pending',
       'description': description,
       'guestName': guestName,
+      'assignedBy': currentUserId,
       'createdAt': DateTime.now().toIso8601String(),
       'completedAt': null,
       'priority': priority,
@@ -163,6 +170,7 @@ class FirebaseTaskService {
     // 2. Guardamos en la colección 'alerts' para que el Wearable (reloj) la lea en su nueva estructura
     final alertId = 'alert-${DateTime.now().millisecondsSinceEpoch}';
     final message = 'Hab. $roomNumber: $description';
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
 
     await _firestore.collection('alerts').doc(alertId).set({
       'id': alertId,
@@ -170,6 +178,7 @@ class FirebaseTaskService {
       'message': message,
       'severity': 'high',
       'roomId': roomId,
+      'assignedBy': currentUserId,
       'createdAt': DateTime.now().toIso8601String(),
       'isAcknowledged': false,
     });

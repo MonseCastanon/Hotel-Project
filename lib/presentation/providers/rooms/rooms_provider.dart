@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/infrastructure/infraestructure.dart';
 
-/// Cambia a `false` cuando el backend esté listo
-const bool kUseMock = true;
+
 
 // ─────────────────────────── Infraestructura ────────────────────────────────
 
@@ -22,9 +21,7 @@ final dioProvider = Provider<Dio>((ref) {
   ));
 });
 
-/// Provider del datasource de habitaciones
 final roomsDataSourceProvider = Provider<RoomsDataSource>((ref) {
-  if (kUseMock) return RoomsLocalDataSource();
   return RoomsDataSourceImpl(ref.watch(dioProvider));
 });
 
