@@ -9,6 +9,7 @@ class ReservationModel {
   final String guestName;
   final DateTime checkIn;
   final DateTime checkOut;
+  final int companions;
   final String status;
   final double total;
   final DateTime createdAt;
@@ -21,6 +22,7 @@ class ReservationModel {
     required this.guestName,
     required this.checkIn,
     required this.checkOut,
+    required this.companions,
     required this.status,
     required this.total,
     required this.createdAt,
@@ -36,6 +38,7 @@ class ReservationModel {
       guestName: json['guestName'] ?? json['guest_name'] ?? '',
       checkIn: DateTime.parse(json['checkIn'] ?? json['check_in']),
       checkOut: DateTime.parse(json['checkOut'] ?? json['check_out']),
+      companions: json['companions'] ?? 0,
       status: json['status'] ?? 'pending',
       total: (json['total'] ?? 0).toDouble(),
       createdAt: DateTime.parse(
@@ -52,6 +55,7 @@ class ReservationModel {
         'guestName': guestName,
         'checkIn': checkIn.toIso8601String(),
         'checkOut': checkOut.toIso8601String(),
+        'companions': companions,
         'status': status,
         'total': total,
         'createdAt': createdAt.toIso8601String(),
@@ -67,6 +71,7 @@ class ReservationModel {
       guestName: guestName,
       checkIn: checkIn,
       checkOut: checkOut,
+      companions: companions,
       status: _parseStatus(status),
       total: total,
       createdAt: createdAt,
@@ -83,6 +88,7 @@ class ReservationModel {
       guestName: reservation.guestName,
       checkIn: reservation.checkIn,
       checkOut: reservation.checkOut,
+      companions: reservation.companions,
       status: reservation.status.name,
       total: reservation.total,
       createdAt: reservation.createdAt,

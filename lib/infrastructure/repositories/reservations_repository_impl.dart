@@ -26,8 +26,18 @@ class ReservationsRepositoryImpl implements ReservationsRepository {
   }
 
   @override
-  Future<Reservation> checkIn(String reservationId) {
-    return _dataSource.checkIn(reservationId);
+  Future<Reservation> checkIn({
+    required String reservationId,
+    required String guestName,
+    required int companions,
+    required DateTime expectedCheckOut,
+  }) {
+    return _dataSource.checkIn(
+      reservationId: reservationId,
+      guestName: guestName,
+      companions: companions,
+      expectedCheckOut: expectedCheckOut,
+    );
   }
 
   @override

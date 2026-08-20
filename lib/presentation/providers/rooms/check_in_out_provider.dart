@@ -9,7 +9,6 @@ import 'package:hotel_app/presentation/providers/tasks/tasks_provider.dart';
 // ─────────────────────────── Infraestructura ────────────────────────────────
 
 final reservationsDataSourceProvider = Provider<ReservationsDataSource>((ref) {
-  if (kUseMock) return ReservationsLocalDataSource();
   return ReservationsDataSourceImpl(ref.watch(dioProvider));
 });
 
@@ -76,7 +75,13 @@ class CheckInOutNotifier extends Notifier<CheckInOutState> {
   /// 
   /// [reservationId] — ID de la reservación a actualizar.
   /// [roomId]        — ID de la habitación (para actualizar su estado a "ocupada").
-  Future<bool> performCheckIn(String reservationId, String roomId) async {
+  Future<bool> performCheckIn(
+    String reservationId,
+    String roomId, {
+    required String guestName,
+    required int companions,
+    required DateTime expectedCheckOut,
+  }) async {
     state = state.copyWith(isLoading: true, clearMessages: true);
     try {
       // Obtener reservacion y habitacion actual
@@ -94,7 +99,12 @@ class CheckInOutNotifier extends Notifier<CheckInOutState> {
       }
 
       // 1. Actualiza el estado de la reservación
-      final reservation = await _reservationsRepo.checkIn(reservationId);
+      final reservation = await _reservationsRepo.checkIn(
+        reservationId: reservationId,
+        guestName: guestName,
+        companions: companions,
+        expectedCheckOut: expectedCheckOut,
+      );
 
       // 2. Actualiza el estado de la habitación a "Ocupada"
       await _roomsRepo.updateRoomStatus(roomId, RoomStatus.occupied);

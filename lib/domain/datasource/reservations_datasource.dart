@@ -36,7 +36,12 @@ abstract class ReservationsDataSource {
   Future<Reservation> createReservation(CreateReservationParams params);
 
   /// Realiza el check-in de una reservación existente.
-  Future<Reservation> checkIn(String reservationId);
+  Future<Reservation> checkIn({
+    required String reservationId,
+    required String guestName,
+    required int companions,
+    required DateTime expectedCheckOut,
+  });
 
   /// Realiza el check-out de una reservación existente.
   Future<Reservation> checkOut(String reservationId);
