@@ -79,6 +79,20 @@ class CheckInOutNotifier extends Notifier<CheckInOutState> {
   Future<bool> performCheckIn(String reservationId, String roomId) async {
     state = state.copyWith(isLoading: true, clearMessages: true);
     try {
+      // Obtener reservacion y habitacion actual
+      final currentReservation = await _reservationsRepo.getReservationById(reservationId);
+      final room = await _roomsRepo.getRoomById(roomId);
+
+      if (currentReservation.status == ReservationStatus.cancelled) {
+        throw Exception('No se puede realizar check-in de una reservación cancelada.');
+      }
+      if (room.status == RoomStatus.pendingCleaning || room.status == RoomStatus.cleaning) {
+        throw Exception('No se puede asignar una habitación que requiere limpieza.');
+      }
+      if (room.status != RoomStatus.available && room.status != RoomStatus.reserved) {
+        throw Exception('No se puede realizar check-in en una habitación no disponible u ocupada.');
+      }
+
       // 1. Actualiza el estado de la reservación
       final reservation = await _reservationsRepo.checkIn(reservationId);
 
@@ -118,14 +132,20 @@ class CheckInOutNotifier extends Notifier<CheckInOutState> {
   ) async {
     state = state.copyWith(isLoading: true, clearMessages: true);
     try {
+      // Validar que se haya hecho check-in primero
+      final currentReservation = await _reservationsRepo.getReservationById(reservationId);
+      if (currentReservation.status != ReservationStatus.checkedIn) {
+        throw Exception('No se puede realizar check-out de una reservación que no tiene check-in.');
+      }
+
       // 1. Actualiza el estado de la reservación
       final reservation = await _reservationsRepo.checkOut(reservationId);
 
       // 2. Obtiene los datos completos de la habitación (necesita roomNumber real)
       final room = await _roomsRepo.getRoomById(roomId);
 
-      // 3. Actualiza el estado de la habitación a "Disponible"
-      await _roomsRepo.updateRoomStatus(roomId, RoomStatus.available);
+      // 3. Actualiza el estado de la habitación a "Pendiente Limpieza"
+      await _roomsRepo.updateRoomStatus(roomId, RoomStatus.pendingCleaning);
 
       // 4. Publica tarea de limpieza en Firestore → el wearable la recibe
       await _taskService.createCleaningTask(

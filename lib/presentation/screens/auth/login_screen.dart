@@ -149,17 +149,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               : const Icon(Icons.login),
                           label: Text(_isSubmitting ? 'Ingresando...' : 'Iniciar sesión'),
                         ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Credenciales: admin@hotel.com / admin123',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                        // const SizedBox(height: 12),
-                        // TextButton(
-                        //   onPressed: () {},
-                        //   child: const Text('¿Olvidaste tu contraseña?'),
-                        // ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () => context.go('/register'),
+            child: const Text('Crear cuenta'),
+          ),
+          const Text(
+            'Credenciales: admin@hotel.com / admin123',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
                       ],
                     ),
                   ),

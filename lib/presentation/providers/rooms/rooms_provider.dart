@@ -42,6 +42,7 @@ class RoomsState {
   final String? errorMessage;
   final RoomStatus? selectedStatus;
   final RoomType? selectedType;
+  final int? selectedCapacity;
 
   const RoomsState({
     this.rooms = const [],
@@ -49,6 +50,7 @@ class RoomsState {
     this.errorMessage,
     this.selectedStatus,
     this.selectedType,
+    this.selectedCapacity,
   });
 
   RoomsState copyWith({
@@ -57,9 +59,11 @@ class RoomsState {
     String? errorMessage,
     RoomStatus? selectedStatus,
     RoomType? selectedType,
+    int? selectedCapacity,
     bool clearError = false,
     bool clearStatus = false,
     bool clearType = false,
+    bool clearCapacity = false,
   }) {
     return RoomsState(
       rooms: rooms ?? this.rooms,
@@ -68,6 +72,8 @@ class RoomsState {
       selectedStatus:
           clearStatus ? null : selectedStatus ?? this.selectedStatus,
       selectedType: clearType ? null : selectedType ?? this.selectedType,
+      selectedCapacity:
+          clearCapacity ? null : selectedCapacity ?? this.selectedCapacity,
     );
   }
 }
@@ -88,10 +94,16 @@ class RoomsNotifier extends Notifier<RoomsState> {
   Future<void> loadRooms() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final rooms = await _repository.getRooms(
+      var rooms = await _repository.getRooms(
         status: state.selectedStatus,
         type: state.selectedType,
       );
+      // Filtro de capacidad aplicado en cliente
+      if (state.selectedCapacity != null) {
+        rooms = rooms
+            .where((r) => r.capacity >= state.selectedCapacity!)
+            .toList();
+      }
       state = state.copyWith(rooms: rooms, isLoading: false);
     } catch (e) {
       state = state.copyWith(
@@ -121,7 +133,17 @@ class RoomsNotifier extends Notifier<RoomsState> {
 
   /// Limpia todos los filtros y recarga
   Future<void> clearFilters() async {
-    state = state.copyWith(clearStatus: true, clearType: true);
+    state = state.copyWith(
+        clearStatus: true, clearType: true, clearCapacity: true);
+    await loadRooms();
+  }
+
+  /// Cambia el filtro de capacidad mínima y recarga
+  Future<void> filterByCapacity(int? capacity) async {
+    state = state.copyWith(
+      selectedCapacity: capacity,
+      clearCapacity: capacity == null,
+    );
     await loadRooms();
   }
 }

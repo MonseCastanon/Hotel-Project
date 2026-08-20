@@ -113,9 +113,8 @@ class DashboardNotifier extends Notifier<DashboardState> {
         available: rooms.where((r) => r.status == RoomStatus.available).length,
         occupied: rooms.where((r) => r.status == RoomStatus.occupied).length,
         reserved: rooms.where((r) => r.status == RoomStatus.reserved).length,
-        maintenance: rooms
-            .where((r) => r.status == RoomStatus.maintenance)
-            .length,
+        maintenance:
+            rooms.where((r) => r.status == RoomStatus.outOfOrder).length,
         total: rooms.length,
       );
 

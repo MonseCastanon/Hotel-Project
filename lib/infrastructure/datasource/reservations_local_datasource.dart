@@ -33,7 +33,7 @@ class ReservationsLocalDataSource implements ReservationsDataSource {
       guestName: 'Roberto Silva',
       checkIn: DateTime.now().add(const Duration(days: 3)),
       checkOut: DateTime.now().add(const Duration(days: 6)),
-      status: ReservationStatus.pending,
+      status: ReservationStatus.newReservation,
       total: 5700,
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
     ),
@@ -44,7 +44,7 @@ class ReservationsLocalDataSource implements ReservationsDataSource {
       guestName: 'Ana Martínez',
       checkIn: DateTime.now().subtract(const Duration(days: 5)),
       checkOut: DateTime.now().subtract(const Duration(days: 2)),
-      status: ReservationStatus.checkedOut,
+      status: ReservationStatus.completed,
       total: 8400,
       createdAt: DateTime.now().subtract(const Duration(days: 10)),
     ),
@@ -92,7 +92,7 @@ class ReservationsLocalDataSource implements ReservationsDataSource {
       guestName: params.guestName,
       checkIn: params.checkIn,
       checkOut: params.checkOut,
-      status: ReservationStatus.pending,
+      status: ReservationStatus.newReservation,
       total: 0,
       createdAt: DateTime.now(),
       notes: params.notes,
@@ -119,7 +119,7 @@ class ReservationsLocalDataSource implements ReservationsDataSource {
     final index = _mockReservations.indexWhere((r) => r.id == reservationId);
     if (index == -1) throw Exception('Reservación no encontrada');
     final updated = _mockReservations[index].copyWith(
-      status: ReservationStatus.checkedOut,
+      status: ReservationStatus.completed,
     );
     _mockReservations[index] = updated;
     return updated;

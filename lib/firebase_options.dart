@@ -62,7 +62,6 @@ class DefaultFirebaseOptions {
     projectId: 'hotel-project-7f0d0',
     storageBucket: 'hotel-project-7f0d0.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyA7VP3YaIWISEQ5hF7McX8Qqj80qvLVK1E',
     appId: '1:492454003354:ios:47ef1dd2784f72582b5523',

@@ -1,16 +1,16 @@
 /// Estados posibles de una reservación
 enum ReservationStatus {
-  pending,
+  newReservation,
   confirmed,
   checkedIn,
-  checkedOut,
+  completed,
   cancelled;
 
   String get label => switch (this) {
-        ReservationStatus.pending => 'Pendiente',
+        ReservationStatus.newReservation => 'Nueva',
         ReservationStatus.confirmed => 'Confirmada',
-        ReservationStatus.checkedIn => 'Check-in realizado',
-        ReservationStatus.checkedOut => 'Check-out realizado',
+        ReservationStatus.checkedIn => 'Hospedado',
+        ReservationStatus.completed => 'Finalizada',
         ReservationStatus.cancelled => 'Cancelada',
       };
 }
@@ -45,9 +45,9 @@ class Reservation {
   /// Número de noches de la reservación
   int get nights => checkOut.difference(checkIn).inDays;
 
-  /// Retorna true si la reservación está activa (pendiente o confirmada)
+  /// Retorna true si la reservación está activa (nueva o confirmada)
   bool get isActive =>
-      status == ReservationStatus.pending ||
+      status == ReservationStatus.newReservation ||
       status == ReservationStatus.confirmed;
 
   /// Retorna true si ya se realizó check-in

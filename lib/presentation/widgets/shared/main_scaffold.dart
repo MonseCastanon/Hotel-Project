@@ -2,24 +2,125 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
 
-/// Scaffold principal que contiene la BottomNavigationBar.
-/// Envuelve las cuatro pantallas principales: Dashboard, Habitaciones, Reservaciones, Perfil.
-class MainScaffold extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hotel_app/presentation/providers/auth/auth_provider.dart';
+import 'package:hotel_app/domain/entities/user.dart';
+
+/// Scaffold principal que contiene la BottomNavigationBar y un menú lateral.
+class MainScaffold extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainScaffold({super.key, required this.navigationShell});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final role = ref.watch(authProvider).role ?? UserRole.unassigned;
+
     return Scaffold(
+      drawer: _DynamicDrawer(role: role),
       body: navigationShell,
       bottomNavigationBar: _BottomNav(
         currentIndex: navigationShell.currentIndex,
-        onTap: (index) => navigationShell.goBranch(
-          index,
-          // Vuelve al root de cada branch cuando se toca el tab activo
-          initialLocation: index == navigationShell.currentIndex,
-        ),
+        onTap: (index) {
+          // Bloquear navegacion a reservaciones (index 2) para mucamas y mantenimiento
+          if (index == 2 && (role == UserRole.housekeeper || role == UserRole.maintenance)) {
+             ScaffoldMessenger.of(context).showSnackBar(
+               const SnackBar(content: Text('No tienes permisos para ver las reservaciones.'))
+             );
+             return;
+          }
+          navigationShell.goBranch(
+            index,
+            initialLocation: index == navigationShell.currentIndex,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DynamicDrawer extends ConsumerWidget {
+  final UserRole role;
+
+  const _DynamicDrawer({required this.role});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userName = ref.watch(authProvider).name ?? 'Usuario';
+    final userEmail = ref.watch(authProvider).email ?? '';
+
+    return Drawer(
+      child: Column(
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: Text(userName),
+            accountEmail: Text('$userEmail\n${role.label}'),
+            currentAccountPicture: const CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, size: 40, color: AppColors.primary),
+            ),
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.dashboard),
+                  title: const Text('Dashboard'),
+                  onTap: () {
+                    context.pop(); // close drawer
+                    context.go('/dashboard');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.bed),
+                  title: const Text('Habitaciones'),
+                  onTap: () {
+                    context.pop();
+                    context.go('/rooms');
+                  },
+                ),
+                if (role == UserRole.admin || role == UserRole.receptionist)
+                  ListTile(
+                    leading: const Icon(Icons.event_note),
+                    title: const Text('Reservaciones'),
+                    onTap: () {
+                      context.pop();
+                      context.go('/reservations');
+                    },
+                  ),
+                if (role == UserRole.admin) ...[
+                  const Divider(),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text('Administración', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.people),
+                    title: const Text('Empleados'),
+                    onTap: () {
+                      context.pop();
+                      context.push('/admin/employees');
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
+            onTap: () {
+              ref.read(authProvider.notifier).logout();
+              context.go('/login');
+            },
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }

@@ -8,18 +8,18 @@ class ReservationStatusChip extends StatelessWidget {
   const ReservationStatusChip({super.key, required this.status});
 
   Color get _color => switch (status) {
-        ReservationStatus.pending => const Color(0xFFE65100),
+        ReservationStatus.newReservation => const Color(0xFFE65100),
         ReservationStatus.confirmed => const Color(0xFF1565C0),
         ReservationStatus.checkedIn => const Color(0xFF2E7D32),
-        ReservationStatus.checkedOut => const Color(0xFF6A1B9A),
+        ReservationStatus.completed => const Color(0xFF6A1B9A),
         ReservationStatus.cancelled => const Color(0xFF616161),
       };
 
   IconData get _icon => switch (status) {
-        ReservationStatus.pending => Icons.hourglass_empty,
+        ReservationStatus.newReservation => Icons.hourglass_empty,
         ReservationStatus.confirmed => Icons.check_circle_outline,
         ReservationStatus.checkedIn => Icons.login,
-        ReservationStatus.checkedOut => Icons.logout,
+        ReservationStatus.completed => Icons.logout,
         ReservationStatus.cancelled => Icons.cancel_outlined,
       };
 
