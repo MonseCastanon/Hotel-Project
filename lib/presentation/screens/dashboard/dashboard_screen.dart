@@ -76,6 +76,17 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ),
               actions: [
+                // Botón Alerta Wearable
+                IconButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => const SendAlertDialog(),
+                    );
+                  },
+                  icon: const Icon(Icons.send_rounded, color: Colors.white),
+                  tooltip: 'Enviar Alerta Wearable',
+                ),
                 // Badge de usuario autenticado
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
@@ -184,20 +195,6 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ],
           ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => const SendAlertDialog(),
-          );
-        },
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.send_rounded, color: Colors.white),
-        label: const Text(
-          'Alerta Wearable',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );

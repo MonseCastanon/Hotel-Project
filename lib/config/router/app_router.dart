@@ -26,8 +26,11 @@ abstract class AppRoutes {
 
 // ─────────────────────────── GoRouter Provider ───────────────────────────────
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final goRouterProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
     routes: _routes,
@@ -110,6 +113,7 @@ final List<RouteBase> _routes = [
               GoRoute(
                 path: ':roomId',
                 name: 'roomDetail',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, state) {
                   final roomId = state.pathParameters['roomId']!;
                   return RoomDetailScreen(roomId: roomId);
@@ -119,6 +123,7 @@ final List<RouteBase> _routes = [
                   GoRoute(
                     path: 'check-in',
                     name: 'checkIn',
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) {
                       final roomId = state.pathParameters['roomId']!;
                       final q = state.uri.queryParameters;
@@ -133,6 +138,7 @@ final List<RouteBase> _routes = [
                   GoRoute(
                     path: 'check-out',
                     name: 'checkOut',
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) {
                       final roomId = state.pathParameters['roomId']!;
                       final extra = state.extra as Map<String, dynamic>? ?? {};
