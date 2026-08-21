@@ -32,8 +32,6 @@ class RoomCard extends ConsumerWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 2,
       child: InkWell(
         onTap: onTap,
         child: Column(
@@ -133,7 +131,7 @@ class RoomCard extends ConsumerWidget {
                         Text(
                           '\$${room.pricePerNight.toStringAsFixed(0)}/noche',
                           style: theme.textTheme.titleSmall?.copyWith(
-                            color: AppColors.primary,
+                            color: cs.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -155,12 +153,15 @@ class _RoomImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     if (images.isEmpty) {
       return Container(
         height: 150,
-        color: AppColors.secondary.withValues(alpha: 0.3),
-        child: const Center(
-          child: Icon(Icons.hotel, size: 48, color: AppColors.secondary),
+        color: cs.surfaceContainerHighest,
+        child: Center(
+          child: Icon(Icons.hotel, size: 48, color: cs.onSurfaceVariant),
         ),
       );
     }
@@ -172,16 +173,16 @@ class _RoomImage extends StatelessWidget {
         images.first,
         fit: BoxFit.cover,
         errorBuilder: (ctx, err, stack) => Container(
-          color: AppColors.secondary.withValues(alpha: 0.3),
-          child: const Center(
+          color: cs.surfaceContainerHighest,
+          child: Center(
             child: Icon(Icons.broken_image_outlined,
-                size: 40, color: AppColors.secondary),
+                size: 40, color: cs.onSurfaceVariant),
           ),
         ),
         loadingBuilder: (ctx, child, progress) {
           if (progress == null) return child;
           return Container(
-            color: AppColors.backgroundLight,
+            color: cs.surfaceContainerHighest,
             child: const Center(child: CircularProgressIndicator()),
           );
         },

@@ -33,7 +33,7 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: RefreshIndicator(
-        color: AppColors.primary,
+        color: theme.colorScheme.primary,
         onRefresh: () => ref.read(dashboardProvider.notifier).loadDashboard(),
         child: CustomScrollView(
           slivers: [
@@ -42,7 +42,7 @@ class DashboardScreen extends ConsumerWidget {
               expandedHeight: 120,
               floating: true,
               pinned: true,
-              backgroundColor: AppColors.primary,
+              backgroundColor: theme.colorScheme.primary,
               flexibleSpace: FlexibleSpaceBar(
                 titlePadding:
                     const EdgeInsets.only(left: 20, right: 20, bottom: 14),
@@ -67,9 +67,9 @@ class DashboardScreen extends ConsumerWidget {
                   ],
                 ),
                 background: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [AppColors.primary, Color(0xFFD4510E)],
+                      colors: [theme.colorScheme.primary, Color(0xFFD4510E)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -133,9 +133,9 @@ class DashboardScreen extends ConsumerWidget {
             ),
 
             if (state.isLoading)
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+                  child: CircularProgressIndicator(color: theme.colorScheme.primary),
                 ),
               )
             else ...[
@@ -230,13 +230,13 @@ class _SectionTitle extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
+              color: Theme.of(context).colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               subtitle!,
               style: TextStyle(
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -274,7 +274,7 @@ class _RoomStatsGrid extends StatelessWidget {
           label: 'Ocupadas',
           value: stats.occupied,
           icon: Icons.person_rounded,
-          color: isDarkMode ? Colors.orange.shade700: AppColors.primary,
+          color: isDarkMode ? Theme.of(context).colorScheme.tertiary : Theme.of(context).colorScheme.primary,
         ),
         _StatCard(
           label: 'Reservadas',
@@ -362,7 +362,7 @@ class _AlertCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCheckIn = alert.type == 'checkIn';
-    final color = isCheckIn ? const Color(0xFF4CAF50) : AppColors.primary;
+    final color = isCheckIn ? const Color(0xFF4CAF50) : Theme.of(context).colorScheme.primary;
     final icon = isCheckIn ? Icons.login_rounded : Icons.logout_rounded;
     final timeStr = DateFormat('HH:mm').format(alert.scheduledAt);
     final dayStr = alert.isToday ? 'Hoy' : 'Mañana';
@@ -478,7 +478,7 @@ class _ReservationTile extends StatelessWidget {
         children: [
           Icon(
             isCheckedIn ? Icons.person_rounded : Icons.event_available_rounded,
-            color: isCheckedIn ? AppColors.primary : const Color(0xFF5C6BC0),
+            color: isCheckedIn ? Theme.of(context).colorScheme.primary : const Color(0xFF5C6BC0),
             size: 22,
           ),
           const SizedBox(width: 12),
@@ -502,7 +502,7 @@ class _ReservationTile extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: (isCheckedIn ? AppColors.primary : const Color(0xFF5C6BC0))
+              color: (isCheckedIn ? Theme.of(context).colorScheme.primary : const Color(0xFF5C6BC0))
                   .withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -512,7 +512,7 @@ class _ReservationTile extends StatelessWidget {
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 color: isCheckedIn
-                    ? AppColors.primary
+                    ? Theme.of(context).colorScheme.primary
                     : const Color(0xFF5C6BC0),
               ),
             ),

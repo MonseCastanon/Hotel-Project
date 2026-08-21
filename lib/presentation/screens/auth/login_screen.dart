@@ -53,11 +53,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColors.backgroundLight, AppColors.secondary],
+            colors: [theme.colorScheme.surface, theme.colorScheme.secondaryContainer],
           ),
         ),
         child: Center(
@@ -76,9 +76,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 38,
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: theme.colorScheme.primary,
                           child: Icon(Icons.hotel, size: 38, color: Colors.white),
                         ),
                         const SizedBox(height: 20),
@@ -86,7 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           'Iniciar sesión',
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: theme.colorScheme.primary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -138,13 +138,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           },
                         ),
                         const SizedBox(height: 20),
-                        ElevatedButton.icon(
+                        FilledButton.icon(
                           onPressed: _isSubmitting ? null : _submit,
                           icon: _isSubmitting
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 18,
                                   height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onPrimary),
                                 )
                               : const Icon(Icons.login),
                           label: Text(_isSubmitting ? 'Ingresando...' : 'Iniciar sesión'),

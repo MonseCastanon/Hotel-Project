@@ -68,11 +68,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColors.backgroundLight, AppColors.secondary],
+            colors: [theme.colorScheme.surface, theme.colorScheme.secondaryContainer],
           ),
         ),
         child: SafeArea(
@@ -102,9 +102,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ),
                             ],
                           ),
-                          const CircleAvatar(
+                          CircleAvatar(
                             radius: 34,
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: theme.colorScheme.primary,
                             child: Icon(Icons.person_add,
                                 size: 34, color: Colors.white),
                           ),
@@ -113,7 +113,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             'Registrar empleado',
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
+                              color: theme.colorScheme.primary,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -217,14 +217,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           const SizedBox(height: 20),
 
                           // ── Botón Registrar ──
-                          ElevatedButton.icon(
+                          FilledButton.icon(
                             onPressed: _isSubmitting ? null : _submit,
                             icon: _isSubmitting
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 18,
                                     height: 18,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2, color: Colors.white),
+                                        strokeWidth: 2, color: theme.colorScheme.onPrimary),
                                   )
                                 : const Icon(Icons.person_add),
                             label: Text(_isSubmitting

@@ -13,15 +13,18 @@ class RoomStatusBadge extends StatelessWidget {
     this.compact = false,
   });
 
-  Color get _color => switch (status) {
-        RoomStatus.available => const Color(0xFF2E7D32),
-        RoomStatus.occupied => const Color(0xFFC62828),
-        RoomStatus.reserved => AppColors.primary,
-        RoomStatus.pendingCleaning => const Color(0xFFF57C00),
-        RoomStatus.cleaning => const Color(0xFF1976D2),
-        RoomStatus.cleaned => const Color(0xFF388E3C),
-        RoomStatus.outOfOrder => const Color(0xFFE65100),
-      };
+  Color _getColor(BuildContext context) {
+    final theme = Theme.of(context);
+    return switch (status) {
+      RoomStatus.available => const Color(0xFF2E7D32),
+      RoomStatus.occupied => const Color(0xFFC62828),
+      RoomStatus.reserved => theme.colorScheme.primary,
+      RoomStatus.pendingCleaning => const Color(0xFFF57C00),
+      RoomStatus.cleaning => const Color(0xFF1976D2),
+      RoomStatus.cleaned => const Color(0xFF388E3C),
+      RoomStatus.outOfOrder => const Color(0xFFE65100),
+    };
+  }
 
   IconData get _icon => switch (status) {
         RoomStatus.available => Icons.check_circle_outline,
@@ -35,18 +38,20 @@ class RoomStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = _getColor(context);
+    
     if (compact) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: _color.withValues(alpha: 0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _color.withValues(alpha: 0.4)),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
         ),
         child: Text(
           status.label,
           style: TextStyle(
-            color: _color,
+            color: color,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -57,19 +62,19 @@ class RoomStatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: _color.withValues(alpha: 0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(_icon, size: 14, color: _color),
+          Icon(_icon, size: 14, color: color),
           const SizedBox(width: 5),
           Text(
             status.label,
             style: TextStyle(
-              color: _color,
+              color: color,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),

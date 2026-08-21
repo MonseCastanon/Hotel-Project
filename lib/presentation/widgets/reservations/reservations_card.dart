@@ -25,8 +25,6 @@ class ReservationCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -37,8 +35,8 @@ class ReservationCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                  child: const Icon(Icons.person, color: AppColors.primary),
+                  backgroundColor: cs.primaryContainer,
+                  child: Icon(Icons.person, color: cs.onPrimaryContainer),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -101,7 +99,7 @@ class ReservationCard extends StatelessWidget {
                   if (onCheckIn != null &&
                       reservation.status == ReservationStatus.confirmed) ...[
                     const SizedBox(width: 8),
-                    ElevatedButton.icon(
+                    FilledButton.icon(
                       onPressed: onCheckIn,
                       icon: const Icon(Icons.login, size: 16),
                       label: const Text('Check-in'),
@@ -110,7 +108,7 @@ class ReservationCard extends StatelessWidget {
                   if (onCheckOut != null &&
                       reservation.status == ReservationStatus.checkedIn) ...[
                     const SizedBox(width: 8),
-                    ElevatedButton.icon(
+                    FilledButton.icon(
                       onPressed: onCheckOut,
                       icon: const Icon(Icons.logout, size: 16),
                       label: const Text('Check-out'),
@@ -148,12 +146,12 @@ class _DateInfo extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: 13, color: AppColors.primary),
+            Icon(icon, size: 13, color: theme.colorScheme.primary),
             const SizedBox(width: 4),
             Text(
               label,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: AppColors.primary,
+                color: theme.colorScheme.primary,
               ),
             ),
           ],
