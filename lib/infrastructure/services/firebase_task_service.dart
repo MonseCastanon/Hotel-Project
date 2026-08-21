@@ -172,9 +172,20 @@ class FirebaseTaskService {
     final message = 'Hab. $roomNumber: $description';
     final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
 
+    // Construir un título legible según el tipo de tarea
+    final taskTypeLabel = switch (taskType) {
+      'cleaning' => 'Limpieza',
+      'maintenance' => 'Mantenimiento',
+      'inspection' => 'Inspección',
+      'delivery' => 'Entrega',
+      'guest_request' => 'Solicitud de huésped',
+      _ => taskType,
+    };
+
     await _firestore.collection('alerts').doc(alertId).set({
       'id': alertId,
       'taskId': taskId, // Referencia opcional a la tarea original
+      'title': '$taskTypeLabel — Hab. $roomNumber', // ← campo usado por hotel-smart-app
       'message': message,
       'severity': 'high',
       'roomId': roomId,
