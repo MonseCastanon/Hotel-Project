@@ -81,14 +81,6 @@ class ReservationCard extends StatelessWidget {
                   date: reservation.checkOut,
                   icon: Icons.logout,
                 ),
-                const Spacer(),
-                Text(
-                  '\$${reservation.total.toStringAsFixed(0)}',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ],
             ),
 

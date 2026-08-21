@@ -57,6 +57,17 @@ class ReservationsDataSourceImpl implements ReservationsDataSource {
   @override
   Future<Reservation> createReservation(CreateReservationParams params) async {
     try {
+      // Validar que el cuarto no tenga una reservación activa
+      final activeQuery = await _reservations
+          .where('roomId', isEqualTo: params.roomId)
+          .where('status', whereIn: ['confirmed', 'checkedIn', 'newReservation'])
+          .limit(1)
+          .get();
+
+      if (activeQuery.docs.isNotEmpty) {
+        throw Exception('La habitaci\u00f3n ya tiene una reservaci\u00f3n activa. Elige otra habitaci\u00f3n.');
+      }
+
       final docRef = _reservations.doc();
       final reservation = ReservationModel(
         id: docRef.id,
@@ -66,7 +77,7 @@ class ReservationsDataSourceImpl implements ReservationsDataSource {
         checkIn: params.checkIn,
         checkOut: params.checkOut,
         companions: 0, // Por defecto en la creación
-        status: ReservationStatus.newReservation.name,
+        status: ReservationStatus.confirmed.name, // Confirmada directamente
         total: 0.0, // Se calcularía en backend/cloud function
         createdAt: DateTime.now(),
         notes: params.notes,

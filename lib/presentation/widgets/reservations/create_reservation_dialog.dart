@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/config/theme/app_theme.dart';
 import 'package:hotel_app/presentation/providers/reservations/reservations_provider.dart';
+import 'package:hotel_app/presentation/providers/rooms/rooms_provider.dart';
 
 class CreateReservationDialog extends ConsumerStatefulWidget {
   const CreateReservationDialog({super.key});
@@ -13,8 +14,8 @@ class CreateReservationDialog extends ConsumerStatefulWidget {
 
 class _CreateReservationDialogState extends ConsumerState<CreateReservationDialog> {
   final _formKey = GlobalKey<FormState>();
-  String _guestName = '';
-  String _roomId = '';
+  String? _guestName;
+  String? _roomId;
   DateTime? _checkIn;
   DateTime? _checkOut;
   String _notes = '';
@@ -23,6 +24,8 @@ class _CreateReservationDialogState extends ConsumerState<CreateReservationDialo
   @override
   Widget build(BuildContext context) {
     final notifier = ref.read(reservationsProvider.notifier);
+    final roomsState = ref.watch(roomsProvider);
+    final availableRooms = roomsState.rooms.where((r) => r.isAvailable).toList();
 
     return Container(
       padding: EdgeInsets.only(
@@ -47,13 +50,19 @@ class _CreateReservationDialogState extends ConsumerState<CreateReservationDialo
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Nombre del Huésped', prefixIcon: Icon(Icons.person)),
                 validator: (val) => val == null || val.isEmpty ? 'Requerido' : null,
-                onSaved: (val) => _guestName = val ?? '',
+                onSaved: (val) => _guestName = val,
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Habitación (ej. room-101)', prefixIcon: Icon(Icons.meeting_room)),
-                validator: (val) => val == null || val.isEmpty ? 'Requerido' : null,
-                onSaved: (val) => _roomId = val ?? '',
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(labelText: 'Habitación', prefixIcon: Icon(Icons.meeting_room)),
+                value: availableRooms.any((r) => r.id == _roomId) ? _roomId : null,
+                items: availableRooms.map((r) => DropdownMenuItem(
+                  value: r.id,
+                  child: Text('Habitación ${r.roomNumber} - ${r.roomType.label}'),
+                )).toList(),
+                validator: (val) => val == null || val.isEmpty ? 'Selecciona una habitación' : null,
+                onChanged: (val) => setState(() => _roomId = val),
+                onSaved: (val) => _roomId = val,
               ),
               const SizedBox(height: 12),
               Row(
@@ -112,9 +121,9 @@ class _CreateReservationDialogState extends ConsumerState<CreateReservationDialo
                       try {
                         await notifier.createReservation(
                           CreateReservationParams(
-                            roomId: _roomId,
+                            roomId: _roomId!,
                             guestId: 'guest-${DateTime.now().millisecondsSinceEpoch}',
-                            guestName: _guestName,
+                            guestName: _guestName!,
                             checkIn: _checkIn!,
                             checkOut: _checkOut!,
                             notes: _notes,
