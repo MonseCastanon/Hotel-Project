@@ -175,6 +175,16 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> logout() async {
+    // Borrar el PIN del wearable en Firestore para desvincularlo
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'wearablePin': FieldValue.delete(),
+          'wearableLinkedAt': FieldValue.delete(),
+        });
+      } catch (_) {}
+    }
     await FirebaseAuth.instance.signOut();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

@@ -90,25 +90,97 @@ class ProfileScreen extends ConsumerWidget {
                             await FirebaseFirestore.instance.collection('users').doc(userId).set({
                               'wearablePin': pin,
                               'pinCreatedAt': FieldValue.serverTimestamp(),
+                              'wearableLinkedAt': FieldValue.serverTimestamp(),
                             }, SetOptions(merge: true));
                             
                             // Mostrar PIN al usuario
                             if (context.mounted) {
                               showDialog(
                                 context: context,
-                                builder: (_) => AlertDialog(
-                                  title: const Text('Pin Generado'),
-                                  content: Text(
-                                    'Ingresa este código en tu reloj:\n\n$pin',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 8),
+                                builder: (dialogContext) => Dialog(
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  elevation: 0,
+                                  backgroundColor: Colors.transparent,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(24),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).cardColor,
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primary.withValues(alpha: 0.2),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 10),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primary.withValues(alpha: 0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.watch, size: 48, color: AppColors.primary),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        const Text(
+                                          'Vincula tu Reloj',
+                                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Ingresa este PIN de 4 dígitos en la pantalla de tu smartwatch para sincronizarlo.',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                        ),
+                                        const SizedBox(height: 32),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            borderRadius: BorderRadius.circular(16),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.primary.withValues(alpha: 0.3),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 4),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Text(
+                                            pin,
+                                            style: const TextStyle(
+                                              fontSize: 40,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 12,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 32),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: AppColors.primary,
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(vertical: 16),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            ),
+                                            onPressed: () => Navigator.pop(dialogContext),
+                                            child: const Text('Entendido', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('Entendido'),
-                                    )
-                                  ],
                                 ),
                               );
                             }

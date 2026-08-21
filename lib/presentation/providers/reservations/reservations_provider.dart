@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_app/domain/domain.dart';
 import 'package:hotel_app/presentation/providers/rooms/check_in_out_provider.dart';
+import 'package:hotel_app/presentation/providers/rooms/rooms_provider.dart';
 
 // ───────────────────────────── Estado ────────────────────────────────────────
 
@@ -77,6 +78,10 @@ class ReservationsNotifier extends Notifier<ReservationsState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final reservation = await _repository.createReservation(params);
+      
+      // Actualizar estado de la habitación
+      await ref.read(roomsProvider.notifier).updateRoomStatus(params.roomId, RoomStatus.reserved);
+      
       state = state.copyWith(
         reservations: [...state.reservations, reservation],
         isLoading: false,
