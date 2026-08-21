@@ -196,6 +196,20 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 28),
                 ],
 
+                // ── Panel de Administración ────────────────────────────────
+                if (authState.role == UserRole.admin) ...[
+                  _InfoCard(
+                    children: [
+                      _ActionRow(
+                        icon: Icons.people_outline,
+                        label: 'Administrar Empleados',
+                        onTap: () => context.push('/admin/employees'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                ],
+
                 // ── Botón cerrar sesión ────────────────────────────────────
                 _LogoutButton(
                   onLogout: () async {
